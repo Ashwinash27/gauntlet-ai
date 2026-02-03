@@ -8,9 +8,10 @@ env/
 # MCP config (contains tokens)
 .mcp.json
 
-# Claude Code (local settings)
+# Local settings
 .claude/
 .agents/
+CLAUDE.md
 
 # Python
 __pycache__/
