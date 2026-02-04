@@ -30,7 +30,7 @@ class Settings(BaseSettings):
 
     # Detection settings
     embedding_model: str = "text-embedding-3-small"
-    embedding_threshold: float = 0.70
+    embedding_threshold: float = 0.55
     layer3_timeout: float = 3.0
     max_input_length: int = 10000
 
