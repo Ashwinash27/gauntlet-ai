@@ -1,13 +1,287 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Argus AI Dashboard</title>
+    <title>gauntlet - Prompt Injection Detection for LLM Applications</title>
+    <meta name="description" content="Open-source prompt injection detection tool. Runs locally with three-layer cascade: rules, embeddings, LLM judge." />
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+    <style>
+      * {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      }
+
+      code, pre {
+        font-family: 'JetBrains Mono', 'Courier New', monospace;
+      }
+
+      body {
+        background-color: #0a0a0a;
+        color: #fafafa;
+      }
+
+      .code-block {
+        background-color: #18181b;
+        border: 1px solid #27272a;
+        border-radius: 0.5rem;
+        overflow: hidden;
+      }
+
+      .code-header {
+        background-color: #09090b;
+        border-bottom: 1px solid #27272a;
+        padding: 0.75rem 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .copy-btn {
+        background-color: #27272a;
+        color: #fafafa;
+        border: none;
+        padding: 0.375rem 0.75rem;
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: background-color 0.15s;
+      }
+
+      .copy-btn:hover {
+        background-color: #3f3f46;
+      }
+
+      .copy-btn:active {
+        background-color: #52525b;
+      }
+
+      .copy-btn.copied {
+        background-color: #3b82f6;
+      }
+
+      pre {
+        margin: 0;
+        padding: 1rem;
+        overflow-x: auto;
+      }
+
+      pre code {
+        font-size: 0.875rem;
+        line-height: 1.5;
+      }
+
+      .comment {
+        color: #71717a;
+      }
+
+      .keyword {
+        color: #c084fc;
+      }
+
+      .string {
+        color: #4ade80;
+      }
+
+      .function {
+        color: #60a5fa;
+      }
+
+      .property {
+        color: #fbbf24;
+      }
+
+      .terminal-output {
+        color: #a1a1aa;
+      }
+
+      .terminal-success {
+        color: #4ade80;
+      }
+
+      .terminal-label {
+        color: #f87171;
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <!-- Navigation -->
+    <nav class="border-b border-zinc-800">
+      <div class="max-w-7xl mx-auto px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+          <div class="text-xl font-bold">gauntlet</div>
+          <div class="flex gap-6 text-sm">
+            <a href="https://github.com/Ashwinash27/gauntlet-ai" target="_blank" rel="noopener" class="text-zinc-400 hover:text-zinc-100 transition-colors">GitHub</a>
+            <a href="#docs" class="text-zinc-400 hover:text-zinc-100 transition-colors">Docs</a>
+            <a href="https://pypi.org/project/gauntlet-ai" target="_blank" rel="noopener" class="text-zinc-400 hover:text-zinc-100 transition-colors">PyPI</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="max-w-7xl mx-auto px-6 lg:px-8 pt-24 pb-16">
+      <div class="max-w-4xl">
+        <h1 class="text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+          Prompt injection detection for LLM applications.
+        </h1>
+        <p class="text-xl text-zinc-400 mb-12">
+          Runs locally. Bring your own keys.
+        </p>
+
+        <!-- Install Command -->
+        <div class="code-block max-w-2xl">
+          <div class="code-header">
+            <span class="text-sm text-zinc-400">Terminal</span>
+            <button class="copy-btn" onclick="copyToClipboard('pip install gauntlet-ai[all]', this)">Copy</button>
+          </div>
+          <pre><code>$ pip install gauntlet-ai[all]</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- How it Works -->
+    <section class="max-w-7xl mx-auto px-6 lg:px-8 py-24 border-t border-zinc-800">
+      <h2 class="text-3xl font-bold mb-12">How it works</h2>
+
+      <div class="grid md:grid-cols-3 gap-6">
+        <!-- Layer 1 -->
+        <div class="border border-zinc-800 rounded-lg p-8">
+          <div class="text-sm font-medium text-blue-500 mb-3">LAYER 1</div>
+          <h3 class="text-xl font-semibold mb-4">Rules</h3>
+          <p class="text-zinc-400 leading-relaxed mb-4">
+            50+ regex patterns. Zero dependencies. Catches ~60% of attacks.
+          </p>
+          <div class="text-sm text-zinc-500 font-medium">FREE</div>
+        </div>
+
+        <!-- Layer 2 -->
+        <div class="border border-zinc-800 rounded-lg p-8">
+          <div class="text-sm font-medium text-blue-500 mb-3">LAYER 2</div>
+          <h3 class="text-xl font-semibold mb-4">Embeddings</h3>
+          <p class="text-zinc-400 leading-relaxed mb-4">
+            Semantic similarity against 500+ known attack vectors.
+          </p>
+          <div class="text-sm text-zinc-500 font-medium">REQUIRES OPENAI KEY</div>
+        </div>
+
+        <!-- Layer 3 -->
+        <div class="border border-zinc-800 rounded-lg p-8">
+          <div class="text-sm font-medium text-blue-500 mb-3">LAYER 3</div>
+          <h3 class="text-xl font-semibold mb-4">LLM Judge</h3>
+          <p class="text-zinc-400 leading-relaxed mb-4">
+            Claude Haiku analyzes text characteristics for sophisticated attacks.
+          </p>
+          <div class="text-sm text-zinc-500 font-medium">REQUIRES ANTHROPIC KEY</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Code Example -->
+    <section class="max-w-7xl mx-auto px-6 lg:px-8 py-24 border-t border-zinc-800">
+      <h2 class="text-3xl font-bold mb-12">Code example</h2>
+
+      <div class="grid lg:grid-cols-2 gap-6">
+        <!-- Python API -->
+        <div class="code-block">
+          <div class="code-header">
+            <span class="text-sm text-zinc-400">Python API</span>
+            <button class="copy-btn" onclick="copyToClipboard(`from gauntlet import Gauntlet
+
+g = Gauntlet()
+result = g.detect(\"ignore previous instructions\")
+print(result.is_injection)  # True
+print(result.confidence)    # 0.95`, this)">Copy</button>
+          </div>
+          <pre><code><span class="keyword">from</span> gauntlet <span class="keyword">import</span> Gauntlet
+
+g = <span class="function">Gauntlet</span>()
+result = g.<span class="function">detect</span>(<span class="string">"ignore previous instructions"</span>)
+<span class="function">print</span>(result.is_injection)  <span class="comment"># True</span>
+<span class="function">print</span>(result.confidence)    <span class="comment"># 0.95</span></code></pre>
+        </div>
+
+        <!-- CLI Usage -->
+        <div class="code-block">
+          <div class="code-header">
+            <span class="text-sm text-zinc-400">CLI</span>
+            <button class="copy-btn" onclick="copyToClipboard(`gauntlet detect \"ignore previous instructions\"`, this)">Copy</button>
+          </div>
+          <pre><code>$ gauntlet detect <span class="string">"ignore previous instructions"</span>
+  <span class="terminal-label">INJECTION DETECTED</span>
+  <span class="terminal-output">Layer 1 | Confidence: 95% | Type: instruction_override</span>
+
+$ gauntlet scan ./prompts/ --all
+  <span class="terminal-output">Scanned 42 files: </span><span class="terminal-label">3 flagged</span><span class="terminal-output">, </span><span class="terminal-success">39 clean</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- MCP Integration -->
+    <section class="max-w-7xl mx-auto px-6 lg:px-8 py-24 border-t border-zinc-800">
+      <h2 class="text-3xl font-bold mb-6">MCP Integration</h2>
+      <p class="text-zinc-400 mb-12 max-w-3xl">
+        Use gauntlet with Claude Desktop or any Model Context Protocol client. Add this to your MCP configuration:
+      </p>
+
+      <div class="code-block max-w-2xl">
+        <div class="code-header">
+          <span class="text-sm text-zinc-400">claude_desktop_config.json</span>
+          <button class="copy-btn" onclick="copyToClipboard(`{
+  \"mcpServers\": {
+    \"gauntlet\": {
+      \"command\": \"gauntlet\",
+      \"args\": [\"mcp-serve\"]
+    }
+  }
+}`, this)">Copy</button>
+        </div>
+        <pre><code>{
+  <span class="property">"mcpServers"</span>: {
+    <span class="property">"gauntlet"</span>: {
+      <span class="property">"command"</span>: <span class="string">"gauntlet"</span>,
+      <span class="property">"args"</span>: [<span class="string">"mcp-serve"</span>]
+    }
+  }
+}</code></pre>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="max-w-7xl mx-auto px-6 lg:px-8 py-16 border-t border-zinc-800">
+      <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+        <div class="text-zinc-500 text-sm">
+          MIT License
+        </div>
+        <div class="flex gap-8 text-sm">
+          <a href="https://github.com/Ashwinash27/gauntlet-ai" target="_blank" rel="noopener" class="text-zinc-400 hover:text-zinc-100 transition-colors">GitHub</a>
+          <a href="https://pypi.org/project/gauntlet-ai" target="_blank" rel="noopener" class="text-zinc-400 hover:text-zinc-100 transition-colors">PyPI</a>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      function copyToClipboard(text, button) {
+        navigator.clipboard.writeText(text).then(() => {
+          const originalText = button.textContent;
+          button.textContent = 'Copied!';
+          button.classList.add('copied');
+
+          setTimeout(() => {
+            button.textContent = originalText;
+            button.classList.remove('copied');
+          }, 2000);
+        }).catch(err => {
+          console.error('Failed to copy:', err);
+        });
+      }
+    </script>
   </body>
 </html>
