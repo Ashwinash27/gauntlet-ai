@@ -165,6 +165,101 @@ You can also install only the layers you need:
 
 Requires Python 3.11 or higher.
 
+## Setup Guide
+
+After installing (see [Installation](#installation) above), follow these steps to get Gauntlet running.
+
+### 1. Add API keys (optional)
+
+Layer 1 works immediately with no keys and no network access. If that's all you need, skip to step 3.
+
+For deeper detection, you need API keys:
+
+| Layer | Key | What it enables | Where to get it |
+|---|---|---|---|
+| Layer 2 | OpenAI | Semantic similarity matching against 500+ attack vectors | [platform.openai.com/api-keys](https://platform.openai.com/api-keys) |
+| Layer 3 | Anthropic | LLM judge that catches sophisticated attacks | [console.anthropic.com/settings/keys](https://console.anthropic.com/settings/keys) |
+
+You only need keys for the layers you want to use. Pick any of these methods to store them:
+
+**CLI (recommended)** — saves to `~/.gauntlet/config.toml` with owner-only file permissions:
+
+```bash
+gauntlet config set openai_key sk-...
+gauntlet config set anthropic_key sk-ant-...
+```
+
+**Environment variables:**
+
+```bash
+export OPENAI_API_KEY=sk-...
+export ANTHROPIC_API_KEY=sk-ant-...
+```
+
+**Directly in code:**
+
+```python
+from gauntlet import Gauntlet
+g = Gauntlet(openai_key="sk-...", anthropic_key="sk-ant-...")
+```
+
+If keys are set in multiple places, Gauntlet checks constructor arguments first, then the config file, then environment variables.
+
+### 2. Verify your setup
+
+```bash
+gauntlet config list
+```
+
+You should see output like this:
+
+```
+ Key                  Value
+ openai_key           sk-proj0...F4xA (config file)
+ anthropic_key        sk-ant-a...9xBc (env: ANTHROPIC_API_KEY)
+ embedding_model      not set
+ embedding_threshold  not set
+ llm_model            not set
+ llm_timeout          not set
+```
+
+Any key showing `not set` means that layer will be skipped during detection. That's fine — you only need the layers you want.
+
+### 3. Run your first check
+
+```bash
+gauntlet detect "ignore all previous instructions"
+```
+
+You should see:
+
+```
+  INJECTION DETECTED
+  Layer 1 | Confidence: 95% | Type: instruction_override
+  Pattern: instruction_override_basic
+  Latency: 0.1ms
+```
+
+The CLI runs Layer 1 only by default. To run all layers you have keys for:
+
+```bash
+gauntlet detect --all "ignore all previous instructions"
+```
+
+Or from Python:
+
+```python
+from gauntlet import detect
+
+result = detect("ignore all previous instructions")
+print(result.is_injection)   # True
+print(result.attack_type)    # "instruction_override"
+```
+
+### 4. MCP server setup (optional)
+
+If you want to use Gauntlet with Claude Code or Claude Desktop, see the [MCP Server](#mcp-server) section above. The server picks up keys from any of the methods in step 1 — you can also pass them via the `env` block in your Claude configuration.
+
 ## Development
 
 ```bash
