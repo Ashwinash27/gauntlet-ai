@@ -126,7 +126,8 @@ def serve() -> None:
 
     async def _run() -> None:
         async with stdio_server() as (read_stream, write_stream):
-            await server.run(read_stream, write_stream)
+            init_options = server.create_initialization_options()
+            await server.run(read_stream, write_stream, init_options)
 
     asyncio.run(_run())
 
