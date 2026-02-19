@@ -732,6 +732,179 @@ INJECTION_PATTERNS: list[InjectionPattern] = [
         confidence=0.88,
         description="Fake document boundaries with new instructions",
     ),
+    # =========================================================================
+    # 10. PINT FALSE NEGATIVE PATTERNS
+    # =========================================================================
+    InjectionPattern(
+        name="forget_everything_command",
+        pattern=re.compile(
+            r"\bforget\b.{0,20}\b(everything|all(\s+of)?\s+(that|this|it))\b.{0,40}"
+            r"\b(write|say|tell|output|print|respond|answer|and\b|now\b)",
+            re.IGNORECASE,
+        ),
+        category="instruction_override",
+        confidence=0.88,
+        description="'Forget everything' followed by action command",
+    ),
+    InjectionPattern(
+        name="vergiss_alles",
+        pattern=re.compile(
+            r"\bvergiss(t)?\b.{0,5}\balles\b",
+            re.IGNORECASE,
+        ),
+        category="multilingual_injection",
+        confidence=0.88,
+        description="German 'forget everything' without requiring instruction noun",
+    ),
+    InjectionPattern(
+        name="your_instructions_now",
+        pattern=re.compile(
+            r"\b(your\s+(instructions?|task)\s+(is|are)\s+now|"
+            r"change\s+your\s+(instructions?|rules?|behavior)|"
+            r"additional\s+instructions?)\b",
+            re.IGNORECASE,
+        ),
+        category="instruction_override",
+        confidence=0.90,
+        description="Direct instruction replacement or injection",
+    ),
+    InjectionPattern(
+        name="forced_output_command",
+        pattern=re.compile(
+            r"\bstop\s*[-:]\s*(write|say|output|print)\b|"
+            r"\bjust\s+(output|say|write|respond\s+with)\b\s",
+            re.IGNORECASE,
+        ),
+        category="instruction_override",
+        confidence=0.85,
+        description="Forced output via stop/just commands",
+    ),
+    InjectionPattern(
+        name="act_as_system_role",
+        pattern=re.compile(
+            r"\b(act|function|behave|fungieren|fungiere)\b.{0,10}\b(as|als)\b.{0,20}"
+            r"\b(terminal|interpreter|translator|linux|python|shell|"
+            r"\u00dcbersetzer|korrektor|redakteur)\b",
+            re.IGNORECASE,
+        ),
+        category="jailbreak",
+        confidence=0.88,
+        description="Impersonation of system roles (terminal, interpreter, etc.)",
+    ),
+    InjectionPattern(
+        name="abweichend_vorherigen",
+        pattern=re.compile(
+            r"\babweichend\b.{0,15}\b(vorherigen?|bisherigen?)\b",
+            re.IGNORECASE,
+        ),
+        category="multilingual_injection",
+        confidence=0.88,
+        description="German 'deviating from previous' instruction override",
+    ),
+    InjectionPattern(
+        name="nun_folgen_aufgaben",
+        pattern=re.compile(
+            r"\b(nun|jetzt)\s+folgen\s+(neue|weitere)\b",
+            re.IGNORECASE,
+        ),
+        category="multilingual_injection",
+        confidence=0.85,
+        description="German 'now follow new/further tasks' injection",
+    ),
+    InjectionPattern(
+        name="now_you_are_persona",
+        pattern=re.compile(
+            r"\b(now\s+you\s+(are|act\s+as)|jetzt\s+bist\s+du)\b",
+            re.IGNORECASE,
+        ),
+        category="jailbreak",
+        confidence=0.82,
+        description="Immediate persona switch via 'now you are'",
+    ),
+    InjectionPattern(
+        name="bosnian_injection",
+        pattern=re.compile(
+            r"\bzaboravi\s+sve\b",
+            re.IGNORECASE,
+        ),
+        category="multilingual_injection",
+        confidence=0.90,
+        description="Bosnian/Croatian/Serbian 'forget everything' injection",
+    ),
+    InjectionPattern(
+        name="imagine_you_are",
+        pattern=re.compile(
+            r"\bimagine\s+you\s+are\b",
+            re.IGNORECASE,
+        ),
+        category="jailbreak",
+        confidence=0.78,
+        description="Persona hijack via 'imagine you are'",
+    ),
+    InjectionPattern(
+        name="say_yes_no",
+        pattern=re.compile(
+            r"\bsay\s+(yes|no|true|false)\b\s*[.!?]?\s*$",
+            re.IGNORECASE | re.MULTILINE,
+        ),
+        category="instruction_override",
+        confidence=0.80,
+        description="Forced binary response command",
+    ),
+    InjectionPattern(
+        name="ignore_preceding_orders",
+        pattern=re.compile(
+            r"\bignore\s+(all\s+)?(preceding|prior)\s+(orders?|commands?|text|instructions?)\b",
+            re.IGNORECASE,
+        ),
+        category="instruction_override",
+        confidence=0.92,
+        description="Ignore preceding orders/commands variant",
+    ),
+    InjectionPattern(
+        name="german_info_irrelevant",
+        pattern=re.compile(
+            r"\b(vorherigen?|bisherigen?)\s+(informationen|angaben)\b.{0,40}"
+            r"\b(irrelevant|ignorieren?|nicht|falsch|vergessen)\b",
+            re.IGNORECASE,
+        ),
+        category="multilingual_injection",
+        confidence=0.85,
+        description="German 'previous information is irrelevant' context manipulation",
+    ),
+    InjectionPattern(
+        name="spaced_injection_words",
+        pattern=re.compile(
+            r"(?:[Ss]\s+[Aa]\s+[Yy]|[Ii]\s+[Gg]\s+[Nn]\s+[Oo]\s+[Rr]\s+[Ee]|"
+            r"[Ww]\s+[Rr]\s+[Ii]\s+[Tt]\s+[Ee]|[Oo]\s+[Uu]\s+[Tt]\s+[Pp]\s+[Uu]\s+[Tt])"
+            r"\s+\w(\s+\w){2,}",
+            re.IGNORECASE,
+        ),
+        category="obfuscation",
+        confidence=0.88,
+        description="Character-spaced injection words (S a y, I g n o r e, etc.)",
+    ),
+    InjectionPattern(
+        name="repeat_after_me",
+        pattern=re.compile(
+            r"\brepeat\s+after\s+me\b",
+            re.IGNORECASE,
+        ),
+        category="instruction_override",
+        confidence=0.80,
+        description="Forced repetition command",
+    ),
+    InjectionPattern(
+        name="disregard_provided_context",
+        pattern=re.compile(
+            r"\b(disregarding|not\s+by)\s+the\s+(articles?|documents?|provided|context)\b|"
+            r"\b(answer|respond)\s+by\s+your\s+own\b",
+            re.IGNORECASE,
+        ),
+        category="context_manipulation",
+        confidence=0.82,
+        description="Disregarding provided context/articles",
+    ),
 ]
 
 

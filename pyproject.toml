@@ -31,6 +31,7 @@ llm = ["anthropic>=0.18.0"]
 cli = ["typer[all]>=0.9.0", "rich>=13.0.0"]
 mcp = ["mcp>=0.9.0"]
 api = ["fastapi>=0.100.0", "uvicorn[standard]>=0.20.0"]
+cache = ["redis>=5.0.0"]
 all = [
     "openai>=1.12.0",
     "numpy>=1.24.0",
@@ -40,6 +41,7 @@ all = [
     "mcp>=0.9.0",
     "fastapi>=0.100.0",
     "uvicorn[standard]>=0.20.0",
+    "redis>=5.0.0",
 ]
 dev = [
     "pytest>=7.0.0",

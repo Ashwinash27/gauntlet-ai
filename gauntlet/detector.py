@@ -47,6 +47,8 @@ class Gauntlet:
         llm_model: str = "claude-3-haiku-20240307",
         llm_timeout: float = 3.0,
         confidence_threshold: float = 0.70,
+        redis_url: str | None = None,
+        cache_ttl: int = 3600,
     ) -> None:
         """Initialize the Gauntlet detector.
 
@@ -64,10 +66,21 @@ class Gauntlet:
             llm_model: Claude model name for Layer 3.
             llm_timeout: Timeout for Layer 3 API calls.
             confidence_threshold: Min confidence for Layer 3 detection.
+            redis_url: Redis connection URL for caching (optional, opt-in).
+            cache_ttl: Cache entry TTL in seconds (default: 3600).
         """
         # Resolve keys
         self._openai_key = openai_key or get_openai_key()
         self._anthropic_key = anthropic_key or get_anthropic_key()
+
+        # Cache (opt-in)
+        self._cache = None
+        if redis_url:
+            try:
+                from gauntlet.cache import RedisCache
+                self._cache = RedisCache(url=redis_url, ttl=cache_ttl)
+            except Exception as e:
+                logger.warning("Failed to initialize cache: %s", type(e).__name__)
 
         # Layer 1: Always available
         self._rules = RulesDetector()
@@ -171,13 +184,20 @@ class Gauntlet:
             if invalid:
                 raise ValueError(f"Invalid layer numbers: {invalid}. Must be 1, 2, or 3.")
 
+        # Cache lookup
+        if self._cache:
+            cached = self._cache.get(text, run_layers)
+            if cached is not None:
+                logger.debug("Cache hit — returning cached result")
+                return cached
+
         def _build_result(
             is_injection: bool = False,
             confidence: float = 0.0,
             attack_type: str | None = None,
             detected_by_layer: int | None = None,
         ) -> DetectionResult:
-            return DetectionResult(
+            result = DetectionResult(
                 is_injection=is_injection,
                 confidence=confidence,
                 attack_type=attack_type,
@@ -187,6 +207,9 @@ class Gauntlet:
                 errors=errors,
                 layers_skipped=layers_skipped,
             )
+            if self._cache:
+                self._cache.set(text, run_layers, result)
+            return result
 
         # Layer 1: Rules
         if 1 in run_layers:
