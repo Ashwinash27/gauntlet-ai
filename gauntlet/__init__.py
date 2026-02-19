@@ -22,5 +22,5 @@ from gauntlet.models import DetectionResult, LayerResult
 # Library best practice: NullHandler so apps without logging config stay silent
 logging.getLogger("gauntlet").addHandler(logging.NullHandler())
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __all__ = ["Gauntlet", "detect", "DetectionResult", "LayerResult", "setup_logging"]

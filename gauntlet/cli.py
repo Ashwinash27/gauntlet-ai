@@ -218,6 +218,23 @@ def _get_app():
         console.print(table)
         console.print()
 
+    @app.command()
+    def serve(
+        host: str = typer.Option("0.0.0.0", "--host", "-h", help="Bind host"),
+        port: int = typer.Option(8000, "--port", "-p", help="Bind port"),
+        reload: bool = typer.Option(False, "--reload", help="Enable auto-reload"),
+    ) -> None:
+        """Start the REST API server."""
+        try:
+            import uvicorn
+        except ImportError:
+            err_console.print(
+                "[red]API server requires uvicorn. "
+                "Install with: pip install gauntlet-ai[api][/red]"
+            )
+            raise typer.Exit(1)
+        uvicorn.run("gauntlet.api:app", host=host, port=port, reload=reload)
+
     @app.command("mcp-serve")
     def mcp_serve() -> None:
         """Start the MCP server for Claude Code integration."""

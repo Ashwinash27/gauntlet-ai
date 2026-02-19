@@ -1,3 +1,4 @@
+[![CI](https://github.com/Ashwinash27/gauntlet-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/Ashwinash27/gauntlet-ai/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/gauntlet-ai.svg)](https://pypi.org/project/gauntlet-ai/)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -18,42 +19,34 @@ It is one of the most critical and least solved vulnerabilities in production LL
 
 Gauntlet sits between your user's input and your model. It inspects every message before it reaches the LLM, scores it for injection risk, and gives you a clear result: safe, or suspicious. You decide what to do with that signal — block it, flag it, or route it differently.
 
-It runs as a Python library, a command-line tool, or an MCP server. Layer 1 works entirely offline with no API keys. Deeper analysis is available when you need it.
+It runs as a Python library, a command-line tool, a REST API, or an MCP server. Layer 1 works entirely offline with no API keys. Deeper analysis is available when you need it.
 
-## How Detection Works
+## Architecture
 
-Gauntlet uses a three-layer cascade. Each layer is progressively more powerful and more expensive. The cascade stops the moment any layer flags the input, so most checks resolve in the fastest, cheapest layer.
+```mermaid
+flowchart TD
+    A[User Input] --> B{Layer 1: Rules}
+    B -->|Detected| R[🚨 Injection Detected]
+    B -->|Clean| C{Layer 2: Embeddings}
+    C -->|Detected| R
+    C -->|Clean| D{Layer 3: LLM Judge}
+    D -->|Detected| R
+    D -->|Clean| S[✅ Clean]
 
-```
-                                              Cost per check
-
-  Input
-    │
-    ▼
- Layer 1    Pattern matching                   Free
-    │       50+ regex rules, 13 languages,     ~0.1ms
-    │       9 attack categories
-    │       Catches ~60% of attacks
-    │
-    ▼
- Layer 2    Semantic similarity                 ~$0.00002
-    │       500+ pre-computed attack vectors,   ~700ms
-    │       cosine similarity via OpenAI
-    │       Catches ~30% more
-    │
-    ▼
- Layer 3    LLM judge                           ~$0.0003
-    │       Claude Haiku analyzes sanitized     ~1s
-    │       text characteristics
-    │       Catches sophisticated attacks
-    │
-    ▼
-  Result    Clean or flagged
+    style B fill:#e8f5e9,stroke:#2e7d32
+    style C fill:#e3f2fd,stroke:#1565c0
+    style D fill:#fce4ec,stroke:#c62828
+    style R fill:#ffcdd2,stroke:#b71c1c
+    style S fill:#c8e6c9,stroke:#1b5e20
 ```
 
-Layer 1 requires no API keys and no network access. It runs locally, in-process, and handles the majority of known attack patterns. Layers 2 and 3 activate only when the previous layer finds nothing, and only if you have configured the relevant API keys.
+| Layer | Method | Cost | Latency | Coverage |
+|-------|--------|------|---------|----------|
+| Layer 1 | 50+ regex patterns, 13 languages | Free | ~0.1ms | ~60% of known attacks |
+| Layer 2 | 500+ attack embeddings, cosine similarity | ~$0.00002 | ~700ms | ~30% more |
+| Layer 3 | Claude Haiku LLM judge | ~$0.0003 | ~1s | Sophisticated attacks |
 
-If any layer encounters an error — an API timeout, a missing key, a network failure — it fails open. The text is allowed through with a warning, and the next layer takes over. Your application is never blocked by a detection failure.
+The cascade stops at the first detection. If any layer errors, it fails open — your application is never blocked by a detection failure.
 
 ## Usage
 
@@ -70,7 +63,7 @@ result.attack_type        # "instruction_override"
 result.detected_by_layer  # 1
 ```
 
-To enable all three layers, provide your API keys. Gauntlet will automatically use every layer it has keys for.
+To enable all three layers, provide your API keys:
 
 ```python
 from gauntlet import Gauntlet
@@ -89,6 +82,58 @@ gauntlet detect --file input.txt --json
 gauntlet scan ./prompts/ --pattern "*.txt"
 ```
 
+### REST API
+
+Start the API server:
+
+```bash
+gauntlet serve
+# or directly:
+uvicorn gauntlet.api:app --host 0.0.0.0 --port 8000
+```
+
+Endpoints:
+
+```bash
+# Health check
+curl http://localhost:8000/health
+
+# Detect injection
+curl -X POST http://localhost:8000/detect \
+  -H "Content-Type: application/json" \
+  -d '{"text": "ignore previous instructions", "layers": [1]}'
+```
+
+Response:
+
+```json
+{
+  "is_injection": true,
+  "confidence": 0.95,
+  "attack_type": "instruction_override",
+  "detected_by_layer": 1,
+  "layer_results": [...],
+  "total_latency_ms": 0.12
+}
+```
+
+### Docker
+
+```bash
+docker build -t gauntlet .
+docker run -p 8000:8000 \
+  -e OPENAI_API_KEY=sk-... \
+  -e ANTHROPIC_API_KEY=sk-ant-... \
+  gauntlet
+```
+
+Or with docker-compose:
+
+```bash
+docker-compose up -d
+curl http://localhost:8000/health
+```
+
 ## What It Detects
 
 Gauntlet recognizes nine categories of prompt injection attack.
@@ -104,6 +149,32 @@ Gauntlet recognizes nine categories of prompt injection attack.
 | Obfuscation | Encoded payloads via Base64, leetspeak, Unicode homoglyphs |
 | Hypothetical Framing | Attacks wrapped in fiction, hypotheticals, or thought experiments |
 | Multilingual Injection | Attack patterns in 13 non-English languages |
+
+## Benchmark Results
+
+Run the benchmark yourself:
+
+```bash
+python -m evaluation.benchmark
+```
+
+Results will be populated after running with your configuration. The benchmark tests against ~4,500 samples (3,500 malicious + 1,000 benign) across three configurations.
+
+<!-- Paste benchmark output here after running -->
+
+## Comparison
+
+| Feature | Gauntlet | Rebuff | LLM Guard | Vigil |
+|---------|----------|--------|-----------|-------|
+| Local regex layer (no API) | Yes | No | Yes | Yes |
+| Embedding similarity | Yes | Yes | No | No |
+| LLM judge | Yes | Yes | Yes | No |
+| Fail-open design | Yes | No | No | No |
+| Python library | Yes | Yes | Yes | Yes |
+| REST API | Yes | Yes | Yes | No |
+| MCP server | Yes | No | No | No |
+| Zero-config baseline | Yes | No | No | No |
+| Multilingual (13 languages) | Yes | No | Partial | No |
 
 ## Configuration
 
@@ -151,7 +222,7 @@ The package is published on PyPI as `gauntlet-ai`. The Python import is `gauntle
 pip install gauntlet-ai[all]
 ```
 
-This installs all three detection layers, the CLI, and the MCP server.
+This installs all three detection layers, the CLI, the REST API, and the MCP server.
 
 You can also install only the layers you need:
 
@@ -160,6 +231,7 @@ You can also install only the layers you need:
 | `pip install gauntlet-ai` | Layer 1 only. Pattern matching, no external dependencies beyond Pydantic. |
 | `pip install gauntlet-ai[embeddings]` | Adds Layer 2. Requires an OpenAI API key. |
 | `pip install gauntlet-ai[llm]` | Adds Layer 3. Requires an Anthropic API key. |
+| `pip install gauntlet-ai[api]` | Adds the REST API server (FastAPI + Uvicorn). |
 | `pip install gauntlet-ai[cli]` | Adds the `gauntlet` command-line tool. |
 | `pip install gauntlet-ai[mcp]` | Adds the MCP server. |
 
@@ -211,33 +283,10 @@ If keys are set in multiple places, Gauntlet checks constructor arguments first,
 gauntlet config list
 ```
 
-You should see output like this:
-
-```
- Key                  Value
- openai_key           sk-proj0...F4xA (config file)
- anthropic_key        sk-ant-a...9xBc (env: ANTHROPIC_API_KEY)
- embedding_model      not set
- embedding_threshold  not set
- llm_model            not set
- llm_timeout          not set
-```
-
-Any key showing `not set` means that layer will be skipped during detection. That's fine — you only need the layers you want.
-
 ### 3. Run your first check
 
 ```bash
 gauntlet detect "ignore all previous instructions"
-```
-
-You should see:
-
-```
-  INJECTION DETECTED
-  Layer 1 | Confidence: 95% | Type: instruction_override
-  Pattern: instruction_override_basic
-  Latency: 0.1ms
 ```
 
 The CLI runs Layer 1 only by default. To run all layers you have keys for:
@@ -256,20 +305,16 @@ print(result.is_injection)   # True
 print(result.attack_type)    # "instruction_override"
 ```
 
-### 4. MCP server setup (optional)
-
-If you want to use Gauntlet with Claude Code or Claude Desktop, see the [MCP Server](#mcp-server) section above. The server picks up keys from any of the methods in step 1 — you can also pass them via the `env` block in your Claude configuration.
-
 ## Development
 
 ```bash
 git clone https://github.com/Ashwinash27/gauntlet-ai.git
 cd gauntlet-ai
-pip install -e ".[all,dev]"
+pip install -e ".[all,api,dev]"
 pytest -v
 ```
 
-340 tests across all layers, the detector cascade, configuration, and data models.
+357 tests across all layers, the API, the detector cascade, configuration, and data models.
 
 ## License
 

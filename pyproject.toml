@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "gauntlet-ai"
-version = "0.1.1"
+version = "0.2.0"
 description = "Prompt injection detection for LLM applications"
 readme = "README.md"
 license = "MIT"
@@ -30,6 +30,7 @@ embeddings = ["openai>=1.12.0", "numpy>=1.24.0"]
 llm = ["anthropic>=0.18.0"]
 cli = ["typer[all]>=0.9.0", "rich>=13.0.0"]
 mcp = ["mcp>=0.9.0"]
+api = ["fastapi>=0.100.0", "uvicorn[standard]>=0.20.0"]
 all = [
     "openai>=1.12.0",
     "numpy>=1.24.0",
@@ -37,12 +38,15 @@ all = [
     "typer[all]>=0.9.0",
     "rich>=13.0.0",
     "mcp>=0.9.0",
+    "fastapi>=0.100.0",
+    "uvicorn[standard]>=0.20.0",
 ]
 dev = [
     "pytest>=7.0.0",
     "pytest-asyncio>=0.21.0",
     "pytest-cov>=4.0.0",
     "black>=23.0.0",
+    "httpx>=0.24.0",
 ]
 
 [project.scripts]
