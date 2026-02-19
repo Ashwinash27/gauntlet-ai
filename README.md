@@ -152,15 +152,22 @@ Gauntlet recognizes nine categories of prompt injection attack.
 
 ## Benchmark Results
 
+Tested on 9,338 samples (8,338 malicious + 1,000 benign):
+
+| Configuration | Dataset | Samples | Precision | Recall | F1 | FPR | Avg Latency | P95 Latency |
+|---------------|---------|---------|-----------|--------|----|-----|-------------|-------------|
+| Layer 1 only | Full | 9,338 | 99.86% | 33.79% | 50.49% | 0.40% | 0.55ms | 1.27ms |
+| Layers 1+2 | Core | 1,150 | 53.76% | 100.00% | 69.93% | 12.90% | 285.36ms | 470.83ms |
+
+**Layer 1** (regex) is extremely precise with near-zero false positives. It catches ~34% of attacks instantly at sub-millisecond latency.
+
+**Layers 1+2** (regex + embeddings) achieve 100% recall on the core attack set — every injection is caught. The tradeoff is a higher false positive rate (12.9%), which Layer 3 (LLM judge) is designed to filter.
+
 Run the benchmark yourself:
 
 ```bash
 python -m evaluation.benchmark
 ```
-
-Results will be populated after running with your configuration. The benchmark tests against ~4,500 samples (3,500 malicious + 1,000 benign) across three configurations.
-
-<!-- Paste benchmark output here after running -->
 
 ## Comparison
 

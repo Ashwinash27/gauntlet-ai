@@ -1,0 +1,30 @@
+{
+  "layer1_full": {
+    "tp": 2817,
+    "fp": 4,
+    "fn": 5521,
+    "tn": 996,
+    "precision": 0.9986,
+    "recall": 0.3379,
+    "f1": 0.5049,
+    "fpr": 0.004,
+    "accuracy": 0.4083,
+    "avg_latency_ms": 0.55,
+    "p95_latency_ms": 1.27,
+    "total_samples": 9338
+  },
+  "layer12_core": {
+    "tp": 150,
+    "fp": 129,
+    "fn": 0,
+    "tn": 871,
+    "precision": 0.5376,
+    "recall": 1.0,
+    "f1": 0.6993,
+    "fpr": 0.129,
+    "accuracy": 0.8878,
+    "avg_latency_ms": 285.36,
+    "p95_latency_ms": 470.83,
+    "total_samples": 1150
+  }
+}
