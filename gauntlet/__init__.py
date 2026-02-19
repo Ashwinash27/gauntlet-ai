@@ -13,8 +13,14 @@ Examples:
     result = g.detect("subtle attack")
 """
 
+import logging
+
 from gauntlet.detector import Gauntlet, detect
+from gauntlet._logging import setup_logging
 from gauntlet.models import DetectionResult, LayerResult
 
+# Library best practice: NullHandler so apps without logging config stay silent
+logging.getLogger("gauntlet").addHandler(logging.NullHandler())
+
 __version__ = "0.1.0"
-__all__ = ["Gauntlet", "detect", "DetectionResult", "LayerResult"]
+__all__ = ["Gauntlet", "detect", "DetectionResult", "LayerResult", "setup_logging"]

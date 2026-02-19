@@ -9,6 +9,7 @@ import time
 
 from gauntlet.config import get_anthropic_key, get_openai_key
 from gauntlet.layers.rules import RulesDetector
+from gauntlet._logging import _log_detection_event
 from gauntlet.models import DetectionResult, LayerResult
 
 logger = logging.getLogger(__name__)
@@ -191,6 +192,10 @@ class Gauntlet:
         if 1 in run_layers:
             l1_result = self._rules.detect(text)
             layer_results.append(l1_result)
+            _log_detection_event(
+                text, 1, l1_result.latency_ms, l1_result.is_injection,
+                l1_result.attack_type, l1_result.confidence,
+            )
 
             if l1_result.error:
                 errors.append(f"Layer 1 (rules): {l1_result.error}")
@@ -209,6 +214,10 @@ class Gauntlet:
             if embeddings:
                 l2_result = embeddings.detect(text)
                 layer_results.append(l2_result)
+                _log_detection_event(
+                    text, 2, l2_result.latency_ms, l2_result.is_injection,
+                    l2_result.attack_type, l2_result.confidence,
+                )
 
                 if l2_result.error:
                     errors.append(f"Layer 2 (embeddings): {l2_result.error}")
@@ -229,6 +238,10 @@ class Gauntlet:
             if llm:
                 l3_result = llm.detect(text)
                 layer_results.append(l3_result)
+                _log_detection_event(
+                    text, 3, l3_result.latency_ms, l3_result.is_injection,
+                    l3_result.attack_type, l3_result.confidence,
+                )
 
                 if l3_result.error:
                     errors.append(f"Layer 3 (llm_judge): {l3_result.error}")
