@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-02-19T20:49:20.407293+00:00",
+  "timestamp": "2026-02-19T21:07:59.490635+00:00",
   "embedding_threshold": 0.75,
   "benchmarks": {
     "Internal (known) / L1": {
@@ -84,6 +84,48 @@
       "accuracy": 0.6685,
       "avg_latency_ms": 236.72,
       "p95_latency_ms": 399.68,
+      "total_samples": 546
+    },
+    "Internal (known) / L1+2+3": {
+      "tp": 150,
+      "fp": 80,
+      "fn": 0,
+      "tn": 920,
+      "precision": 0.6522,
+      "recall": 1.0,
+      "f1": 0.7895,
+      "fpr": 0.08,
+      "accuracy": 0.9304,
+      "avg_latency_ms": 1335.02,
+      "p95_latency_ms": 2268.32,
+      "total_samples": 1150
+    },
+    "Internal (holdout) / L1+2+3": {
+      "tp": 99,
+      "fp": 86,
+      "fn": 1,
+      "tn": 914,
+      "precision": 0.5351,
+      "recall": 0.99,
+      "f1": 0.6947,
+      "fpr": 0.086,
+      "accuracy": 0.9209,
+      "avg_latency_ms": 1378.35,
+      "p95_latency_ms": 2236.65,
+      "total_samples": 1100
+    },
+    "PINT external / L1+2+3": {
+      "tp": 123,
+      "fp": 6,
+      "fn": 80,
+      "tn": 337,
+      "precision": 0.9535,
+      "recall": 0.6059,
+      "f1": 0.741,
+      "fpr": 0.0175,
+      "accuracy": 0.8425,
+      "avg_latency_ms": 1443.68,
+      "p95_latency_ms": 2171.61,
       "total_samples": 546
     }
   }

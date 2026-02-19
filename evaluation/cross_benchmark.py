@@ -1,6 +1,6 @@
 """Cross-benchmark evaluation across internal known, holdout, and PINT datasets.
 
-Runs Layer 1 only and Layer 1+2 on each dataset for generalization testing.
+Runs Layer 1, Layer 1+2, and Layer 1+2+3 on each dataset for generalization testing.
 
 Run: python -m evaluation.cross_benchmark
 """
@@ -98,7 +98,7 @@ def run_benchmark(
     """Run benchmark on samples with given layer config."""
     from gauntlet import Gauntlet
 
-    g = Gauntlet(embedding_threshold=threshold)
+    g = Gauntlet(embedding_threshold=threshold, llm_timeout=30.0)
     metrics = Metrics()
 
     total = len(samples)
@@ -126,20 +126,24 @@ def run_benchmark(
         else:
             metrics.tn += 1
 
-        if (i + 1) % 200 == 0 or (i + 1) == total:
-            print(f"  [{label}] {i + 1}/{total}")
+        # Report more frequently when Layer 3 is active (it's slow)
+        step = 50 if 3 in layers else 200
+        if (i + 1) % step == 0 or (i + 1) == total:
+            print(f"  [{label}] {i + 1}/{total} (last: {latency:.0f}ms)")
 
     return metrics
 
 
-def main() -> None:
+def main(only_config: str | None = None) -> None:
     print("=" * 60)
     print("Cross-Benchmark Evaluation")
     print("=" * 60)
 
-    # Check OpenAI key for Layer 2
+    # Check API keys
     has_openai = bool(os.environ.get("OPENAI_API_KEY"))
+    has_anthropic = bool(os.environ.get("ANTHROPIC_API_KEY"))
     print(f"OpenAI API key: {'found' if has_openai else 'NOT FOUND (Layer 2 will be skipped)'}")
+    print(f"Anthropic API key: {'found' if has_anthropic else 'NOT FOUND (Layer 3 will be skipped)'}")
 
     # Load datasets
     print("\nLoading datasets...")
@@ -175,6 +179,25 @@ def main() -> None:
     ]
     if has_openai:
         layer_configs.append(("L1+2", [1, 2]))
+    if has_openai and has_anthropic:
+        layer_configs.append(("L1+2+3", [1, 2, 3]))
+
+    if only_config:
+        layer_configs = [(n, l) for n, l in layer_configs if n == only_config]
+        if not layer_configs:
+            print(f"ERROR: config '{only_config}' not available")
+            return
+        print(f"Filtering to config: {only_config}")
+
+    # Try to load existing results to merge with
+    existing_results = {}
+    if RESULTS_PATH.exists():
+        try:
+            with open(RESULTS_PATH) as f:
+                existing_data = json.load(f)
+                existing_results = existing_data.get("benchmarks", {})
+        except (json.JSONDecodeError, KeyError):
+            pass
 
     all_results = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -225,6 +248,10 @@ def main() -> None:
             f"{r['fpr']:.2%} | {r['avg_latency_ms']:.1f}ms |"
         )
 
+    # Merge with existing results
+    merged_benchmarks = {**existing_results, **all_results["benchmarks"]}
+    all_results["benchmarks"] = merged_benchmarks
+
     # Save results
     with open(RESULTS_PATH, "w") as f:
         json.dump(all_results, f, indent=2)
@@ -232,4 +259,11 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    import sys
+    # Allow filtering: python -m evaluation.cross_benchmark --only L1+2+3
+    only_config = None
+    if "--only" in sys.argv:
+        idx = sys.argv.index("--only")
+        if idx + 1 < len(sys.argv):
+            only_config = sys.argv[idx + 1]
+    main(only_config=only_config)

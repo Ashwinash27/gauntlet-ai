@@ -180,17 +180,36 @@ To measure generalization beyond the training set, we evaluate on three separate
 | Benchmark | Samples | Config | Precision | Recall | F1 | FPR | Avg Latency |
 |-----------|---------|--------|-----------|--------|----|-----|-------------|
 | Internal (known) | 150m + 1000b | L1 | 93.75% | 40.00% | 56.07% | 0.40% | 0.2ms |
-| Internal (known) | 150m + 1000b | L1+2 | 96.15% | 100.00% | 98.04% | 0.60% | 256.3ms |
+| Internal (known) | 150m + 1000b | L1+2 | 96.15% | 100.00% | 98.04% | 0.60% | 256ms |
+| Internal (known) | 150m + 1000b | L1+2+3 | 65.22% | 100.00% | 78.95% | 8.00% | 1335ms |
 | Internal (holdout) | 100m + 1000b | L1 | 90.70% | 39.00% | 54.55% | 0.40% | 0.2ms |
-| Internal (holdout) | 100m + 1000b | L1+2 | 94.23% | 98.00% | 96.08% | 0.60% | 247.1ms |
+| Internal (holdout) | 100m + 1000b | L1+2 | 94.23% | 98.00% | 96.08% | 0.60% | 247ms |
+| Internal (holdout) | 100m + 1000b | L1+2+3 | 53.51% | 99.00% | 69.47% | 8.60% | 1378ms |
 | PINT external | 203m + 343b | L1 | 92.00% | 11.33% | 20.18% | 0.58% | 0.3ms |
-| PINT external | 203m + 343b | L1+2 | 92.31% | 11.82% | 20.96% | 0.58% | 236.7ms |
+| PINT external | 203m + 343b | L1+2 | 92.31% | 11.82% | 20.96% | 0.58% | 237ms |
+| PINT external | 203m + 343b | L1+2+3 | 95.35% | 60.59% | 74.10% | 1.75% | 1444ms |
 
-**Key findings:**
+### Layer Value Analysis
 
-- **L1+2 generalizes well to unseen but similar attacks** — 98% recall on holdout samples that are stylistically similar to the training set but not exact matches.
-- **Out-of-distribution attacks are hard** — the PINT benchmark uses attack patterns structurally different from our embeddings, and L1+2 catches only ~12%. This is where Layer 3 (LLM judge) adds the most value.
-- **False positive rate stays below 1%** across all benchmarks and configurations, meaning benign inputs are rarely misclassified.
+Each layer adds detection capability at different cost/latency tradeoffs:
+
+**On familiar attacks** (Internal known + holdout):
+
+| Config | Recall | FPR | Avg Latency | What it adds |
+|--------|--------|-----|-------------|--------------|
+| L1 | 40% | 0.4% | 0.2ms | Fast regex catches obvious patterns — free, instant, zero config |
+| L1+2 | 98-100% | 0.6% | 250ms | Embeddings catch semantically similar attacks — near-perfect recall with minimal FPR increase |
+| L1+2+3 | 99-100% | 8% | 1.3s | LLM judge adds marginal recall but significantly increases false positives on familiar attacks |
+
+**On unfamiliar attacks** (PINT external benchmark):
+
+| Config | Recall | FPR | Avg Latency | What it adds |
+|--------|--------|-----|-------------|--------------|
+| L1 | 11.3% | 0.6% | 0.3ms | Regex catches only attacks that match known patterns |
+| L1+2 | 11.8% | 0.6% | 237ms | Embeddings add almost nothing — PINT attacks are too different from training data |
+| L1+2+3 | 60.6% | 1.8% | 1.4s | LLM judge catches 5x more attacks than L1+2 alone, with only 1.2% FPR increase |
+
+**Key takeaway:** Layer 2 (embeddings) is the best value for known attack patterns — near-perfect recall at <1% FPR. Layer 3 (LLM judge) is essential for novel, out-of-distribution attacks where embeddings have no reference point. The optimal configuration depends on your threat model: use L1+2 for low-latency protection against known attack styles, and add L3 when you need to catch novel attacks at the cost of higher latency and FPR.
 
 ```bash
 python -m evaluation.cross_benchmark
