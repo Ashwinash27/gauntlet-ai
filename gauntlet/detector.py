@@ -42,7 +42,7 @@ class Gauntlet:
         self,
         openai_key: str | None = None,
         anthropic_key: str | None = None,
-        embedding_threshold: float = 0.55,
+        embedding_threshold: float = 0.80,
         embedding_model: str = "text-embedding-3-small",
         llm_model: str = "claude-3-haiku-20240307",
         llm_timeout: float = 3.0,

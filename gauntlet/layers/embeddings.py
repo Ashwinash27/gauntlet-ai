@@ -48,7 +48,7 @@ class EmbeddingsDetector:
     def __init__(
         self,
         openai_key: str,
-        threshold: float = 0.55,
+        threshold: float = 0.80,
         model: str = "text-embedding-3-small",
         embeddings_path: Path | None = None,
         metadata_path: Path | None = None,
@@ -57,7 +57,7 @@ class EmbeddingsDetector:
 
         Args:
             openai_key: OpenAI API key for generating embeddings.
-            threshold: Similarity threshold (0.0-1.0). Default 0.55.
+            threshold: Similarity threshold (0.0-1.0). Default 0.80.
             model: Embedding model name.
             embeddings_path: Path to .npz file with pre-computed embeddings.
             metadata_path: Path to metadata JSON file.

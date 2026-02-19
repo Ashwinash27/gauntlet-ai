@@ -100,7 +100,7 @@ class TestEmbeddingsDetectorInit:
 
     @patch("openai.OpenAI")
     def test_init_default_threshold(self, mock_openai_cls, embeddings_files: tuple[Path, Path]) -> None:
-        """Should use default threshold of 0.55."""
+        """Should use default threshold of 0.80."""
         from gauntlet.layers.embeddings import EmbeddingsDetector
 
         emb_path, meta_path = embeddings_files
@@ -109,7 +109,7 @@ class TestEmbeddingsDetectorInit:
             embeddings_path=emb_path,
             metadata_path=meta_path,
         )
-        assert detector.threshold == 0.55
+        assert detector.threshold == 0.80
 
     @patch("openai.OpenAI")
     def test_init_custom_threshold(self, mock_openai_cls, embeddings_files: tuple[Path, Path]) -> None:

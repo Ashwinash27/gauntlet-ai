@@ -169,6 +169,33 @@ Run the benchmark yourself:
 python -m evaluation.benchmark
 ```
 
+### Cross-Benchmark Evaluation
+
+To measure generalization beyond the training set, we evaluate on three separate benchmarks:
+
+- **Internal (known)**: 150 core attack phrases that are present in the embeddings database + 1,000 benign samples. This measures in-distribution detection.
+- **Internal (holdout)**: 100 malicious samples from our generated dataset whose text does NOT appear in the embeddings database + 1,000 benign. This measures near-distribution generalization.
+- **PINT Benchmark**: 546 samples (203 injection + 343 benign) from an external prompt injection dataset. This measures out-of-distribution generalization.
+
+| Benchmark | Samples | Config | Precision | Recall | F1 | FPR | Avg Latency |
+|-----------|---------|--------|-----------|--------|----|-----|-------------|
+| Internal (known) | 150m + 1000b | L1 | 93.75% | 40.00% | 56.07% | 0.40% | 0.2ms |
+| Internal (known) | 150m + 1000b | L1+2 | 96.15% | 100.00% | 98.04% | 0.60% | 256.3ms |
+| Internal (holdout) | 100m + 1000b | L1 | 90.70% | 39.00% | 54.55% | 0.40% | 0.2ms |
+| Internal (holdout) | 100m + 1000b | L1+2 | 94.23% | 98.00% | 96.08% | 0.60% | 247.1ms |
+| PINT external | 203m + 343b | L1 | 92.00% | 11.33% | 20.18% | 0.58% | 0.3ms |
+| PINT external | 203m + 343b | L1+2 | 92.31% | 11.82% | 20.96% | 0.58% | 236.7ms |
+
+**Key findings:**
+
+- **L1+2 generalizes well to unseen but similar attacks** — 98% recall on holdout samples that are stylistically similar to the training set but not exact matches.
+- **Out-of-distribution attacks are hard** — the PINT benchmark uses attack patterns structurally different from our embeddings, and L1+2 catches only ~12%. This is where Layer 3 (LLM judge) adds the most value.
+- **False positive rate stays below 1%** across all benchmarks and configurations, meaning benign inputs are rarely misclassified.
+
+```bash
+python -m evaluation.cross_benchmark
+```
+
 ## Comparison
 
 | Feature | Gauntlet | Rebuff | LLM Guard | Vigil |
