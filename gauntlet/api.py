@@ -78,11 +78,20 @@ def create_app():
             "FastAPI is required for the API server. " "Install with: pip install gauntlet-ai[api]"
         )
 
+    from fastapi.middleware.cors import CORSMiddleware
+
     app = FastAPI(
         title="Gauntlet",
         description="Prompt injection detection API",
         version="0.2.0",
         lifespan=_lifespan,
+    )
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_methods=["*"],
+        allow_headers=["*"],
     )
 
     @app.get("/health", response_model=HealthResponse)
