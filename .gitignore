@@ -54,6 +54,13 @@ data/raw/
 *.parquet
 *.arrow
 
+# Evaluation artifacts (regenerate with python -m evaluation.benchmark)
+evaluation/results.json
+evaluation/cross_benchmark_results.json
+evaluation/pint_test_results.json
+evaluation/pint_false_negatives.jsonl
+evaluation/threshold_sweep.json
+
 # OS
 .DS_Store
 Thumbs.db
