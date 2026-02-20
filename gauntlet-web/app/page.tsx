@@ -7,23 +7,23 @@ import Footer from "@/components/Footer";
 
 export default function Home() {
   return (
-    <main className="max-w-[720px] mx-auto px-6">
+    <main className="max-w-[800px] mx-auto px-6">
       <div className="pt-[160px]">
         <Hero />
       </div>
-      <div className="pt-[120px]">
+      <div className="pt-[120px]" id="playground">
         <Playground />
       </div>
-      <div className="pt-[120px]">
+      <div className="pt-[160px]">
         <Architecture />
       </div>
-      <div className="pt-[120px]">
+      <div className="pt-[160px]">
         <Benchmarks />
       </div>
-      <div className="pt-[120px]">
+      <div className="pt-[160px]">
         <Install />
       </div>
-      <div className="pt-[120px]">
+      <div className="pt-[80px]">
         <Footer />
       </div>
     </main>

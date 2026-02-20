@@ -3,58 +3,79 @@
 import { motion } from "framer-motion";
 
 const ROWS = [
-  { benchmark: "Internal (known)", config: "L1+2", f1: "98.04%", recall: "100%", fpr: "0.60%" },
-  { benchmark: "Internal (holdout)", config: "L1+2", f1: "96.08%", recall: "98%", fpr: "0.60%" },
-  { benchmark: "PINT External", config: "L1+2+3", f1: "90.82%", recall: "87.25%", fpr: "1.46%" },
+  { benchmark: "Internal (known)", config: "L1+2", f1: "98.04%", recall: "100%", fpr: "0.60%", external: false },
+  { benchmark: "Internal (holdout)", config: "L1+2", f1: "96.08%", recall: "98%", fpr: "0.60%", external: false },
+  { benchmark: "PINT", config: "L1+2+3", f1: "90.82%", recall: "87.25%", fpr: "1.46%", external: true },
 ];
 
 const HEADERS = ["Benchmark", "Config", "F1", "Recall", "FPR"];
 
-const fadeIn = {
-  initial: { opacity: 0, y: 8 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, margin: "-64px" },
-  transition: { duration: 0.4, ease: "easeOut" },
-};
-
 export default function Benchmarks() {
   return (
-    <motion.section {...fadeIn}>
-      <p className="text-xs tracking-[0.2em] uppercase text-[#888888] mb-8">
+    <motion.section
+      initial={{ opacity: 0, y: 12 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-64px" }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+    >
+      <h2 className="text-[32px] font-semibold text-[#EDEDED]">
         Benchmarks
+      </h2>
+      <p className="mt-2 text-[15px] text-[#888888] mb-8">
+        Evaluated across internal holdout and external datasets.
       </p>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm border-collapse">
-          <thead>
-            <tr className="border-b border-[#1F1F1F]">
-              {HEADERS.map((h) => (
-                <th
-                  key={h}
-                  className="text-left text-[#888888] font-normal py-3 pr-6 first:pl-0"
-                >
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {ROWS.map((row) => (
-              <tr key={row.benchmark} className="border-b border-[#1F1F1F]">
-                <td className="py-3 pr-6 text-[#EDEDED]">{row.benchmark}</td>
-                <td className="py-3 pr-6 font-mono text-[#888888]">{row.config}</td>
-                <td className="py-3 pr-6 font-mono text-[#EDEDED]">{row.f1}</td>
-                <td className="py-3 pr-6 font-mono text-[#EDEDED]">{row.recall}</td>
-                <td className="py-3 pr-6 font-mono text-[#EDEDED]">{row.fpr}</td>
+      <div className="bg-[#111111] border border-[#1E1E1E] rounded-[8px] overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-[#0F0F0F]">
+                {HEADERS.map((h) => (
+                  <th
+                    key={h}
+                    className="text-left text-[11px] uppercase tracking-[0.1em] text-[#555555] px-5 py-3 font-normal whitespace-nowrap"
+                  >
+                    {h}
+                  </th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {ROWS.map((row) => {
+                const fprValue = parseFloat(row.fpr);
+                return (
+                  <tr key={row.benchmark} className="border-t border-[#1A1A1A]">
+                    <td className="px-5 py-4 text-[14px] font-medium text-[#EDEDED] whitespace-nowrap">
+                      {row.benchmark}
+                      {row.external && (
+                        <span className="ml-2 text-[10px] bg-[#1A1A1A] text-[#666666] rounded px-2 py-0.5 inline-block align-middle">
+                          external
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-5 py-4 font-mono text-[14px] text-[#CCCCCC]">
+                      {row.config}
+                    </td>
+                    <td className="px-5 py-4 font-mono text-[14px] text-[#CCCCCC] font-medium">
+                      {row.f1}
+                    </td>
+                    <td className="px-5 py-4 font-mono text-[14px] text-[#CCCCCC]">
+                      {row.recall}
+                    </td>
+                    <td
+                      className={`px-5 py-4 font-mono text-[14px] ${
+                        fprValue < 2 ? "text-[#22C55E]" : "text-[#CCCCCC]"
+                      }`}
+                    >
+                      {row.fpr}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
-
-      <p className="mt-6 text-[#888888] text-sm">
-        Evaluated on 9,300+ samples including deepset/prompt-injections external benchmark. Layer 1 recall improved 5.4x after targeted regex expansion.
-      </p>
     </motion.section>
   );
 }

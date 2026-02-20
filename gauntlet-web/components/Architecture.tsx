@@ -1,55 +1,54 @@
 "use client";
 
+import { Fragment } from "react";
 import { motion } from "framer-motion";
 
 const LAYERS = [
-  { num: "01", name: "Regex Pattern Matching", detail: "51 rules", speed: "~0.1ms", cost: "$0/req" },
-  { num: "02", name: "Embedding Similarity", detail: "603 vectors", speed: "~285ms", cost: "~$0.0001/req" },
-  { num: "03", name: "LLM Judge (Claude Haiku)", detail: "reasoning", speed: "~1.4s", cost: "~$0.003/req" },
+  { num: "1", name: "Regex", stat: "51 rules", speed: "~0.1ms", cost: "$0/req" },
+  { num: "2", name: "Embeddings", stat: "603 vectors", speed: "~285ms", cost: "~$0.0001/req" },
+  { num: "3", name: "LLM Judge", stat: "Claude Haiku", speed: "~1.4s", cost: "~$0.003/req" },
 ];
-
-const fadeIn = {
-  initial: { opacity: 0, y: 8 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, margin: "-64px" },
-  transition: { duration: 0.4, ease: "easeOut" },
-};
 
 export default function Architecture() {
   return (
-    <motion.section {...fadeIn}>
-      <p className="text-xs tracking-[0.2em] uppercase text-[#888888] mb-8">
-        How It Works
-      </p>
+    <motion.section
+      initial={{ opacity: 0, y: 12 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-64px" }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+    >
+      <h2 className="text-[32px] font-semibold text-[#EDEDED]">
+        How it works
+      </h2>
 
-      <div className="border-t border-[#1F1F1F]">
-        {LAYERS.map((layer) => (
-          <div
-            key={layer.num}
-            className="border-b border-[#1F1F1F] py-4 flex items-baseline gap-6 font-mono text-sm"
-          >
-            <span className="text-[#555555] shrink-0">{layer.num}</span>
-            <span className="text-[#EDEDED] min-w-[200px]">{layer.name}</span>
-            <span className="text-[#888888] min-w-[88px]">{layer.detail}</span>
-            <span className="text-[#555555] min-w-[64px] text-right">{layer.speed}</span>
-            <span className="text-[#555555] ml-auto">{layer.cost}</span>
-          </div>
+      <div className="mt-10 flex flex-col md:flex-row md:items-stretch gap-3">
+        {LAYERS.map((layer, i) => (
+          <Fragment key={layer.num}>
+            {i > 0 && (
+              <div className="hidden md:flex items-center justify-center shrink-0">
+                <span className="text-[#333333] text-lg">&rarr;</span>
+              </div>
+            )}
+            <div className="flex-1 bg-[#111111] border border-[#1E1E1E] rounded-[8px] p-6 relative overflow-hidden">
+              <span className="absolute top-3 right-4 text-[48px] font-bold text-[#1A1A1A] leading-none select-none pointer-events-none">
+                {layer.num}
+              </span>
+              <p className="text-[18px] font-medium text-[#EDEDED] relative">
+                {layer.name}
+              </p>
+              <p className="mt-1 text-[14px] text-[#888888] relative">
+                {layer.stat}
+              </p>
+              <p className="mt-2 text-[12px] font-mono text-[#555555] relative">
+                {layer.speed} &middot; {layer.cost}
+              </p>
+            </div>
+          </Fragment>
         ))}
       </div>
 
-      <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-xs font-mono text-[#555555]">
-        <span>603 attack vectors</span>
-        <span className="text-[#333333]">|</span>
-        <span>9,300+ eval samples</span>
-        <span className="text-[#333333]">|</span>
-        <span>&lt;1.5% false positive rate</span>
-        <span className="text-[#333333]">|</span>
-        <span>379 tests</span>
-      </div>
-
-      <p className="mt-6 text-[#888888] text-sm leading-relaxed max-w-[600px]">
-        Each layer acts as a gate. Fast and cheap first. Slow and smart last.
-        Most requests never reach Layer 3.
+      <p className="mt-8 text-[15px] text-[#777777]">
+        Fast and free first. Slow and smart last. Most requests never reach Layer 3.
       </p>
     </motion.section>
   );

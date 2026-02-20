@@ -8,8 +8,8 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        surface: "#141414",
-        border: "#1F1F1F",
+        surface: "#111111",
+        border: "#1E1E1E",
         "text-primary": "#EDEDED",
         "text-secondary": "#888888",
         destructive: "#FF4040",
@@ -20,7 +20,7 @@ const config: Config = {
         mono: ["var(--font-geist-mono)"],
       },
       maxWidth: {
-        content: "720px",
+        content: "800px",
       },
     },
   },

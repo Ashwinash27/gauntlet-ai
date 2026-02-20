@@ -38,8 +38,8 @@ export default function Playground() {
     try {
       const res = await detect(text.trim());
       setResult(res);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Request failed");
+    } catch {
+      setError("Backend unavailable \u2014 start with: gauntlet serve");
     } finally {
       setLoading(false);
     }
@@ -60,7 +60,7 @@ export default function Playground() {
         result?.layers_skipped.includes(num) || (!lr && result !== null);
 
       let status: "caught" | "clean" | "skipped";
-      let latency = "—";
+      let latency = "\u2014";
 
       if (skipped || !lr) {
         status = "skipped";
@@ -78,142 +78,145 @@ export default function Playground() {
 
   return (
     <section>
-      <p className="text-xs tracking-[0.2em] uppercase text-[#888888] mb-8">
-        Playground
-      </p>
+      <div className="bg-[#111111] border border-[#1E1E1E] rounded-[8px] overflow-hidden">
+        {/* Terminal top bar */}
+        <div className="h-8 bg-[#161616] flex items-center px-3 gap-1.5">
+          <div className="w-2 h-2 rounded-full bg-[#FF5F56] opacity-40" />
+          <div className="w-2 h-2 rounded-full bg-[#FFBD2E] opacity-40" />
+          <div className="w-2 h-2 rounded-full bg-[#27C93F] opacity-40" />
+        </div>
 
-      <textarea
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        onKeyDown={handleKeyDown}
-        placeholder="Enter a prompt to analyze..."
-        rows={4}
-        className="w-full bg-[#141414] border border-[#1F1F1F] rounded-[4px] px-4 py-3 font-mono text-sm text-[#EDEDED] placeholder-[#555555] resize-none focus:outline-none focus:border-[#333333] transition-colors duration-150"
-      />
+        {/* Input area */}
+        <textarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Enter a prompt to analyze..."
+          rows={3}
+          className="w-full bg-transparent border-none p-5 text-[15px] font-mono text-[#CCCCCC] placeholder-[#444444] resize-none focus:outline-none"
+        />
 
-      <div className="mt-4 flex items-center gap-4">
-        <button
-          onClick={handleSubmit}
-          disabled={loading || !text.trim()}
-          className="px-5 py-2 text-sm font-medium border border-white text-white rounded-[4px] bg-transparent hover:bg-white hover:text-black transition-colors duration-150 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-white"
-        >
-          Analyze
-        </button>
-      </div>
-
-      <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1">
-        {EXAMPLES.map((ex) => (
-          <button
-            key={ex}
-            onClick={() => setText(ex)}
-            className="text-xs text-[#888888] hover:text-[#EDEDED] transition-colors duration-150 text-left"
-          >
-            &ldquo;{ex}&rdquo;
-          </button>
-        ))}
-      </div>
-
-      <div className="mt-10">
-        {loading && (
-          <span className="font-mono text-sm text-[#888888]">
-            <span className="animate-blink">_</span>
-          </span>
-        )}
-
-        {error && (
-          <p className="font-mono text-sm text-[#FF4040]">{error}</p>
-        )}
-
-        <AnimatePresence>
-          {result && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
-              className="space-y-4"
-            >
-              <motion.p
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, ease: "easeOut" }}
-                className={`font-mono text-sm ${
-                  result.is_injection
-                    ? "text-[#FF4040]"
-                    : "text-[#22C55E]"
+        {/* Bottom bar: examples + analyze */}
+        <div className="px-5 pb-4 flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-1 min-w-0 overflow-hidden">
+            {EXAMPLES.map((ex, i) => (
+              <button
+                key={ex}
+                onClick={() => setText(ex)}
+                className={`text-[11px] font-mono text-[#555555] bg-transparent border border-[#222222] rounded-full px-3 py-1 hover:border-[#444444] hover:text-[#888888] transition-all duration-150 truncate max-w-[200px] shrink-0${
+                  i >= 2 ? " hidden sm:inline-block" : ""
                 }`}
               >
-                {result.is_injection
-                  ? "Injection detected"
-                  : "No injection"}
-              </motion.p>
+                {ex}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={handleSubmit}
+            disabled={loading || !text.trim()}
+            className="bg-[#EDEDED] text-[#0A0A0A] text-[13px] font-medium px-5 py-2 rounded-[6px] hover:bg-white transition-colors duration-150 disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
+          >
+            Analyze
+          </button>
+        </div>
 
-              <div className="space-y-1">
-                {getLayerRows().map((row, i) => (
-                  <motion.div
-                    key={row.num}
+        {/* Results area */}
+        {(loading || error || result) && (
+          <div className="border-t border-[#1E1E1E] p-5">
+            {loading && (
+              <span className="font-mono text-[15px] text-[#555555] animate-blink">
+                &#9612;
+              </span>
+            )}
+
+            {error && (
+              <p className="font-mono text-[13px] text-[#555555]">{error}</p>
+            )}
+
+            <AnimatePresence>
+              {result && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {/* Verdict */}
+                  <motion.p
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{
-                      duration: 0.4,
-                      ease: "easeOut",
-                      delay: 0.1 * (i + 1),
-                    }}
-                    className="font-mono text-sm flex gap-3"
+                    transition={{ duration: 0.4, ease: "easeOut" }}
+                    className="text-[16px] font-medium text-[#EDEDED] flex items-center gap-2"
                   >
-                    <span className="text-[#555555] w-[72px]">
-                      Layer {row.num}
-                    </span>
-                    <span className="text-[#888888] w-[80px]">
-                      {row.name}
-                    </span>
-                    <span className="text-[#555555] w-[64px] text-right">
-                      {row.latency}
-                    </span>
                     <span
-                      className={
-                        row.status === "caught"
+                      className={`text-[10px] ${
+                        result.is_injection
                           ? "text-[#FF4040]"
-                          : row.status === "clean"
-                          ? "text-[#22C55E]"
-                          : "text-[#555555]"
-                      }
+                          : "text-[#22C55E]"
+                      }`}
                     >
-                      {row.status}
+                      &#11044;
                     </span>
-                  </motion.div>
-                ))}
-              </div>
+                    {result.is_injection
+                      ? "Injection detected"
+                      : "No injection"}
+                  </motion.p>
 
-              {(result.attack_type || result.confidence > 0) && (
-                <motion.div
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{
-                    duration: 0.4,
-                    ease: "easeOut",
-                    delay: 0.4,
-                  }}
-                  className="font-mono text-sm space-y-1 pt-2"
-                >
-                  {result.attack_type && (
-                    <p className="text-[#888888]">
-                      Category:{" "}
-                      <span className="text-[#EDEDED]">
-                        {result.attack_type}
-                      </span>
-                    </p>
+                  {/* Cascade rows */}
+                  <div className="mt-4 space-y-1">
+                    {getLayerRows().map((row, i) => (
+                      <motion.div
+                        key={row.num}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{
+                          duration: 0.4,
+                          ease: "easeOut",
+                          delay: 0.08 * (i + 1),
+                        }}
+                        className="font-mono text-[13px] grid grid-cols-[32px_96px_64px_auto] gap-2"
+                      >
+                        <span className="text-[#888888]">L{row.num}</span>
+                        <span className="text-[#888888]">{row.name}</span>
+                        <span className="text-[#555555] text-right">
+                          {row.latency}
+                        </span>
+                        <span
+                          className={
+                            row.status === "caught"
+                              ? "text-[#FF4040]"
+                              : row.status === "clean"
+                              ? "text-[#22C55E]"
+                              : "text-[#333333]"
+                          }
+                        >
+                          {row.status}
+                        </span>
+                      </motion.div>
+                    ))}
+                  </div>
+
+                  {/* Category + Confidence */}
+                  {(result.attack_type || result.confidence > 0) && (
+                    <motion.p
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.35, duration: 0.3 }}
+                      className="mt-4 font-mono text-[12px] text-[#555555]"
+                    >
+                      {result.attack_type && (
+                        <>Category: {result.attack_type}</>
+                      )}
+                      {result.attack_type && result.confidence > 0 && " \u00B7 "}
+                      {result.confidence > 0 && (
+                        <>Confidence: {result.confidence.toFixed(2)}</>
+                      )}
+                    </motion.p>
                   )}
-                  <p className="text-[#888888]">
-                    Confidence:{" "}
-                    <span className="text-[#EDEDED]">
-                      {(result.confidence * 100).toFixed(1)}%
-                    </span>
-                  </p>
                 </motion.div>
               )}
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </AnimatePresence>
+          </div>
+        )}
       </div>
     </section>
   );

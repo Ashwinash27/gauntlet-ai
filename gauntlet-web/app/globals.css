@@ -7,12 +7,6 @@ html {
   scroll-behavior: smooth;
 }
 
-body {
-  background-image: radial-gradient(circle, #222 1px, transparent 1px);
-  background-size: 24px 24px;
-  background-position: center;
-}
-
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }

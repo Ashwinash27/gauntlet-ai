@@ -381,7 +381,7 @@ pip install -e ".[all,api,dev]"
 pytest -v
 ```
 
-357 tests across all layers, the API, the detector cascade, configuration, and data models.
+379 tests across all layers, the API, the detector cascade, configuration, and data models.
 
 ## License
 
