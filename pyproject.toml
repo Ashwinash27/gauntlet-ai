@@ -9,7 +9,7 @@ description = "Prompt injection detection for LLM applications"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.11"
-authors = [{ name = "Gauntlet Contributors" }]
+authors = [{ name = "Gauntlet Contributors", email = "ashwinashig.27@gmail.com" }]
 keywords = ["prompt-injection", "llm", "security", "ai-safety"]
 classifiers = [
     "Development Status :: 3 - Alpha",
