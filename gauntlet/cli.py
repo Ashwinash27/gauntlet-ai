@@ -44,7 +44,9 @@ def _get_app():
         text: str = typer.Argument(None, help="Text to analyze"),
         file: Path = typer.Option(None, "--file", "-f", help="Read text from file"),
         all_layers: bool = typer.Option(False, "--all", "-a", help="Run all configured layers"),
-        layers: str = typer.Option(None, "--layers", "-l", help="Comma-separated layer numbers (e.g., 1,2)"),
+        layers: str = typer.Option(
+            None, "--layers", "-l", help="Comma-separated layer numbers (e.g., 1,2)"
+        ),
         output_json: bool = typer.Option(False, "--json", "-j", help="Output as JSON"),
     ) -> None:
         """Detect prompt injection in text."""
@@ -88,9 +90,11 @@ def _get_app():
         if result.is_injection:
             console.print()
             console.print(f"  [bold red]INJECTION DETECTED[/bold red]")
-            console.print(f"  [dim]Layer {result.detected_by_layer}[/dim] | "
-                         f"[dim]Confidence:[/dim] [yellow]{result.confidence:.0%}[/yellow] | "
-                         f"[dim]Type:[/dim] [cyan]{result.attack_type}[/cyan]")
+            console.print(
+                f"  [dim]Layer {result.detected_by_layer}[/dim] | "
+                f"[dim]Confidence:[/dim] [yellow]{result.confidence:.0%}[/yellow] | "
+                f"[dim]Type:[/dim] [cyan]{result.attack_type}[/cyan]"
+            )
 
             for lr in result.layer_results:
                 if lr.details:
@@ -104,13 +108,17 @@ def _get_app():
             console.print()
             console.print(f"  [bold green]CLEAN[/bold green]")
             layers_run = [str(lr.layer) for lr in result.layer_results]
-            console.print(f"  [dim]Layers checked:[/dim] {', '.join(layers_run)} | "
-                         f"[dim]Latency:[/dim] {result.total_latency_ms:.1f}ms")
+            console.print(
+                f"  [dim]Layers checked:[/dim] {', '.join(layers_run)} | "
+                f"[dim]Latency:[/dim] {result.total_latency_ms:.1f}ms"
+            )
 
         # Show errors from layers that failed open
         if result.errors:
             console.print()
-            console.print(f"  [bold yellow]WARNINGS[/bold yellow] [dim]({len(result.errors)} layer(s) failed open)[/dim]")
+            console.print(
+                f"  [bold yellow]WARNINGS[/bold yellow] [dim]({len(result.errors)} layer(s) failed open)[/dim]"
+            )
             for error in result.errors:
                 console.print(f"  [yellow]  - {error}[/yellow]")
             console.print(f"  [dim]These layers returned 'not injection' due to errors.[/dim]")
@@ -118,11 +126,16 @@ def _get_app():
 
         # Show skipped layers
         if result.layers_skipped:
-            layer_names = {2: "embeddings (needs OpenAI key + numpy)", 3: "llm_judge (needs Anthropic key)"}
+            layer_names = {
+                2: "embeddings (needs OpenAI key + numpy)",
+                3: "llm_judge (needs Anthropic key)",
+            }
             console.print()
             console.print(f"  [dim]Layers skipped:[/dim]")
             for layer_num in result.layers_skipped:
-                console.print(f"  [dim]  - Layer {layer_num}: {layer_names.get(layer_num, 'unknown')}[/dim]")
+                console.print(
+                    f"  [dim]  - Layer {layer_num}: {layer_names.get(layer_num, 'unknown')}[/dim]"
+                )
 
         console.print()
         raise typer.Exit(1 if result.is_injection else 0)
@@ -240,6 +253,7 @@ def _get_app():
         """Start the MCP server for Claude Code integration."""
         try:
             from gauntlet.mcp_server import serve
+
             serve()
         except ImportError:
             err_console.print(

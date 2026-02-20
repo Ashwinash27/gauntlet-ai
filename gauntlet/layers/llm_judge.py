@@ -132,8 +132,7 @@ class LLMDetector:
             from anthropic import Anthropic
         except ImportError:
             raise ImportError(
-                "Layer 3 requires anthropic. "
-                "Install with: pip install gauntlet-ai[llm]"
+                "Layer 3 requires anthropic. " "Install with: pip install gauntlet-ai[llm]"
             )
 
         self._client = Anthropic(api_key=anthropic_key)
@@ -144,9 +143,7 @@ class LLMDetector:
 
     def _sanitize_text(self, text: str, max_length: int = 200) -> str:
         """Strip dangerous characters, keep alphanumeric + spaces only."""
-        safe_chars = set(
-            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 "
-        )
+        safe_chars = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ")
         sanitized = "".join(c if c in safe_chars else " " for c in text)
         return " ".join(sanitized.split())[:max_length]
 
@@ -161,14 +158,10 @@ class LLMDetector:
         has_xml_tags = bool(re.search(r"<[^>]+>", text))
         has_code_blocks = "```" in text
         has_urls = bool(re.search(r"https?://", text, re.IGNORECASE))
-        has_base64_pattern = bool(
-            re.search(r"[A-Za-z0-9+/]{20,}={0,2}", text)
-        )
+        has_base64_pattern = bool(re.search(r"[A-Za-z0-9+/]{20,}={0,2}", text))
 
         text_lower = text.lower()
-        found_keywords = [
-            kw for kw in SUSPICIOUS_KEYWORDS if kw.lower() in text_lower
-        ]
+        found_keywords = [kw for kw in SUSPICIOUS_KEYWORDS if kw.lower() in text_lower]
 
         return {
             "length": len(text),

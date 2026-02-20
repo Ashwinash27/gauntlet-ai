@@ -143,7 +143,9 @@ def main(only_config: str | None = None) -> None:
     has_openai = bool(os.environ.get("OPENAI_API_KEY"))
     has_anthropic = bool(os.environ.get("ANTHROPIC_API_KEY"))
     print(f"OpenAI API key: {'found' if has_openai else 'NOT FOUND (Layer 2 will be skipped)'}")
-    print(f"Anthropic API key: {'found' if has_anthropic else 'NOT FOUND (Layer 3 will be skipped)'}")
+    print(
+        f"Anthropic API key: {'found' if has_anthropic else 'NOT FOUND (Layer 3 will be skipped)'}"
+    )
 
     # Load datasets
     print("\nLoading datasets...")
@@ -152,18 +154,24 @@ def main(only_config: str | None = None) -> None:
     known_malicious = load_jsonl(DATA_DIR / "malicious_core.jsonl")
     benign = load_jsonl(DATA_DIR / "benign.jsonl")
     known_set = known_malicious + benign
-    print(f"  Internal (known): {len(known_malicious)} malicious + {len(benign)} benign = {len(known_set)}")
+    print(
+        f"  Internal (known): {len(known_malicious)} malicious + {len(benign)} benign = {len(known_set)}"
+    )
 
     # 2. Internal holdout: 100 unseen malicious + 1000 benign
     holdout_malicious = load_jsonl(DATA_DIR / "malicious_holdout.jsonl")
     holdout_set = holdout_malicious + benign
-    print(f"  Internal (holdout): {len(holdout_malicious)} malicious + {len(benign)} benign = {len(holdout_set)}")
+    print(
+        f"  Internal (holdout): {len(holdout_malicious)} malicious + {len(benign)} benign = {len(holdout_set)}"
+    )
 
     # 3. PINT external: all samples (mixed injection + benign)
     pint_samples = load_jsonl(DATA_DIR / "external" / "pint_samples.jsonl")
     pint_malicious = sum(1 for s in pint_samples if s["is_injection"])
     pint_benign = sum(1 for s in pint_samples if not s["is_injection"])
-    print(f"  PINT external: {pint_malicious} malicious + {pint_benign} benign = {len(pint_samples)}")
+    print(
+        f"  PINT external: {pint_malicious} malicious + {pint_benign} benign = {len(pint_samples)}"
+    )
 
     threshold = 0.75
     print(f"\nEmbedding threshold: {threshold}")
@@ -221,16 +229,18 @@ def main(only_config: str | None = None) -> None:
 
             mal_count = metrics.tp + metrics.fn
             ben_count = metrics.fp + metrics.tn
-            results_table.append({
-                "benchmark": ds_name,
-                "samples": f"{mal_count}m + {ben_count}b",
-                "config": config_name,
-                "precision": d["precision"],
-                "recall": d["recall"],
-                "f1": d["f1"],
-                "fpr": d["fpr"],
-                "avg_latency_ms": d["avg_latency_ms"],
-            })
+            results_table.append(
+                {
+                    "benchmark": ds_name,
+                    "samples": f"{mal_count}m + {ben_count}b",
+                    "config": config_name,
+                    "precision": d["precision"],
+                    "recall": d["recall"],
+                    "f1": d["f1"],
+                    "fpr": d["fpr"],
+                    "avg_latency_ms": d["avg_latency_ms"],
+                }
+            )
 
     # Print combined table
     print("\n" + "=" * 60)
@@ -238,7 +248,7 @@ def main(only_config: str | None = None) -> None:
     print("=" * 60)
 
     header = "| Benchmark | Samples | Config | Precision | Recall | F1 | FPR | Avg Latency |"
-    sep =    "|-----------|---------|--------|-----------|--------|----|-----|-------------|"
+    sep = "|-----------|---------|--------|-----------|--------|----|-----|-------------|"
     print(f"\n{header}")
     print(sep)
     for r in results_table:
@@ -260,6 +270,7 @@ def main(only_config: str | None = None) -> None:
 
 if __name__ == "__main__":
     import sys
+
     # Allow filtering: python -m evaluation.cross_benchmark --only L1+2+3
     only_config = None
     if "--only" in sys.argv:

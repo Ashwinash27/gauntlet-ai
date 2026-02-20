@@ -106,12 +106,14 @@ def detect_available_layers() -> list[int]:
         try:
             import numpy  # noqa: F401
             import openai  # noqa: F401
+
             layers.append(2)
         except ImportError:
             pass
     if anthropic_key:
         try:
             import anthropic  # noqa: F401
+
             layers.append(3)
         except ImportError:
             pass
@@ -168,9 +170,7 @@ def run_benchmark(
     return overall, by_category
 
 
-def format_markdown_table(
-    configs: dict[str, tuple[Metrics, dict[str, Metrics]]]
-) -> str:
+def format_markdown_table(configs: dict[str, tuple[Metrics, dict[str, Metrics]]]) -> str:
     """Generate markdown results table."""
     lines = []
 
@@ -274,9 +274,7 @@ def main() -> None:
         # Full set
         if len(full_set) > len(core_set):
             print(f"\n  Full set ({len(full_set)} samples)...")
-            full_overall, full_by_cat = run_benchmark(
-                full_set, layers, f"{config_name}/full"
-            )
+            full_overall, full_by_cat = run_benchmark(full_set, layers, f"{config_name}/full")
             config_results["full_set"] = {
                 "overall": full_overall.to_dict(),
                 "by_category": {k: v.to_dict() for k, v in full_by_cat.items()},
@@ -293,10 +291,7 @@ def main() -> None:
     core_configs = {}
     for config_name in all_results["configs"]:
         core_data = all_results["configs"][config_name]["core_set"]
-        overall = Metrics(**{
-            k: core_data["overall"][k]
-            for k in ["tp", "fp", "fn", "tn"]
-        })
+        overall = Metrics(**{k: core_data["overall"][k] for k in ["tp", "fp", "fn", "tn"]})
         by_cat = {}
         for cat, cat_data in core_data["by_category"].items():
             by_cat[cat] = Metrics(**{k: cat_data[k] for k in ["tp", "fp", "fn", "tn"]})
@@ -306,10 +301,7 @@ def main() -> None:
     for config_name in all_results["configs"]:
         full_data = all_results["configs"][config_name].get("full_set")
         if full_data:
-            overall = Metrics(**{
-                k: full_data["overall"][k]
-                for k in ["tp", "fp", "fn", "tn"]
-            })
+            overall = Metrics(**{k: full_data["overall"][k] for k in ["tp", "fp", "fn", "tn"]})
             by_cat = {}
             for cat, cat_data in full_data["by_category"].items():
                 by_cat[cat] = Metrics(**{k: cat_data[k] for k in ["tp", "fp", "fn", "tn"]})

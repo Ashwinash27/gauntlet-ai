@@ -8,22 +8,25 @@ import pytest
 from gauntlet.detector import Gauntlet, detect
 from gauntlet.models import DetectionResult, LayerResult
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture
 def gauntlet_l1_only() -> Gauntlet:
     """Create a Gauntlet with Layer 1 only (no API keys)."""
-    with patch("gauntlet.detector.get_openai_key", return_value=None), \
-         patch("gauntlet.detector.get_anthropic_key", return_value=None):
+    with (
+        patch("gauntlet.detector.get_openai_key", return_value=None),
+        patch("gauntlet.detector.get_anthropic_key", return_value=None),
+    ):
         return Gauntlet(openai_key=None, anthropic_key=None)
 
 
 # ---------------------------------------------------------------------------
 # Tests: Layer 1 Only (no keys)
 # ---------------------------------------------------------------------------
+
 
 class TestLayer1OnlyDetection:
     """Tests for detection with only Layer 1 available."""
@@ -61,6 +64,7 @@ class TestLayer1OnlyDetection:
 # Tests: available_layers property
 # ---------------------------------------------------------------------------
 
+
 class TestAvailableLayers:
     """Tests for the available_layers property."""
 
@@ -83,6 +87,7 @@ class TestAvailableLayers:
         try:
             import numpy  # noqa: F401
             import openai  # noqa: F401
+
             assert 2 in g.available_layers
         except ImportError:
             assert 2 not in g.available_layers
@@ -92,6 +97,7 @@ class TestAvailableLayers:
         g = Gauntlet(anthropic_key="sk-ant-test-fake-key")
         try:
             import anthropic  # noqa: F401
+
             assert 3 in g.available_layers
         except ImportError:
             assert 3 not in g.available_layers
@@ -100,6 +106,7 @@ class TestAvailableLayers:
 # ---------------------------------------------------------------------------
 # Tests: Cascade Stops at First Detection
 # ---------------------------------------------------------------------------
+
 
 class TestCascadeStops:
     """Tests for cascade stopping at the first detection."""
@@ -178,13 +185,21 @@ class TestCascadeStops:
 
         mock_l2 = MagicMock()
         mock_l2.detect.return_value = LayerResult(
-            is_injection=False, confidence=0.0, attack_type=None, layer=2, latency_ms=50.0,
+            is_injection=False,
+            confidence=0.0,
+            attack_type=None,
+            layer=2,
+            latency_ms=50.0,
         )
         g._embeddings = mock_l2
 
         mock_l3 = MagicMock()
         mock_l3.detect.return_value = LayerResult(
-            is_injection=False, confidence=0.0, attack_type=None, layer=3, latency_ms=200.0,
+            is_injection=False,
+            confidence=0.0,
+            attack_type=None,
+            layer=3,
+            latency_ms=200.0,
         )
         g._llm = mock_l3
 
@@ -198,6 +213,7 @@ class TestCascadeStops:
 # ---------------------------------------------------------------------------
 # Tests: detect() with specific layers parameter
 # ---------------------------------------------------------------------------
+
 
 class TestSpecificLayers:
     """Tests for running specific layers."""
@@ -225,7 +241,11 @@ class TestSpecificLayers:
 
         mock_l2 = MagicMock()
         mock_l2.detect.return_value = LayerResult(
-            is_injection=False, confidence=0.0, attack_type=None, layer=2, latency_ms=50.0,
+            is_injection=False,
+            confidence=0.0,
+            attack_type=None,
+            layer=2,
+            latency_ms=50.0,
         )
         g._embeddings = mock_l2
 
@@ -241,7 +261,11 @@ class TestSpecificLayers:
 
         mock_l3 = MagicMock()
         mock_l3.detect.return_value = LayerResult(
-            is_injection=False, confidence=0.0, attack_type=None, layer=3, latency_ms=100.0,
+            is_injection=False,
+            confidence=0.0,
+            attack_type=None,
+            layer=3,
+            latency_ms=100.0,
         )
         g._llm = mock_l3
 
@@ -257,6 +281,7 @@ class TestSpecificLayers:
 # Tests: Key Resolution
 # ---------------------------------------------------------------------------
 
+
 class TestKeyResolution:
     """Tests for key resolution (constructor, config, env vars)."""
 
@@ -266,7 +291,9 @@ class TestKeyResolution:
         assert g._openai_key == "sk-constructor"
         assert g._anthropic_key == "sk-ant-constructor"
 
-    @patch.dict(os.environ, {"OPENAI_API_KEY": "sk-from-env", "ANTHROPIC_API_KEY": "sk-ant-from-env"})
+    @patch.dict(
+        os.environ, {"OPENAI_API_KEY": "sk-from-env", "ANTHROPIC_API_KEY": "sk-ant-from-env"}
+    )
     @patch("gauntlet.config.load_config", return_value={})
     def test_env_var_fallback(self, mock_load) -> None:
         """Should fall back to env vars when no constructor args or config."""
@@ -292,6 +319,7 @@ class TestKeyResolution:
 # ---------------------------------------------------------------------------
 # Tests: Convenience detect() function
 # ---------------------------------------------------------------------------
+
 
 class TestConvenienceDetect:
     """Tests for the module-level detect() convenience function."""
@@ -327,21 +355,26 @@ class TestConvenienceDetect:
 # Tests: Lazy Initialization
 # ---------------------------------------------------------------------------
 
+
 class TestLazyInit:
     """Tests for lazy initialization of Layer 2 and 3 detectors."""
 
     def test_embeddings_not_initialized_without_key(self) -> None:
         """Should not initialize embeddings detector without OpenAI key."""
-        with patch("gauntlet.detector.get_openai_key", return_value=None), \
-             patch("gauntlet.detector.get_anthropic_key", return_value=None):
+        with (
+            patch("gauntlet.detector.get_openai_key", return_value=None),
+            patch("gauntlet.detector.get_anthropic_key", return_value=None),
+        ):
             g = Gauntlet(openai_key=None)
             detector = g._get_embeddings_detector()
             assert detector is None
 
     def test_llm_not_initialized_without_key(self) -> None:
         """Should not initialize LLM detector without Anthropic key."""
-        with patch("gauntlet.detector.get_openai_key", return_value=None), \
-             patch("gauntlet.detector.get_anthropic_key", return_value=None):
+        with (
+            patch("gauntlet.detector.get_openai_key", return_value=None),
+            patch("gauntlet.detector.get_anthropic_key", return_value=None),
+        ):
             g = Gauntlet(anthropic_key=None)
             detector = g._get_llm_detector()
             assert detector is None
@@ -362,6 +395,7 @@ class TestLazyInit:
 # ---------------------------------------------------------------------------
 # Tests: DetectionResult format
 # ---------------------------------------------------------------------------
+
 
 class TestDetectionResultFormat:
     """Tests for DetectionResult formatting."""
@@ -405,6 +439,7 @@ class TestDetectionResultFormat:
 # Tests: Empty/invalid input
 # ---------------------------------------------------------------------------
 
+
 class TestInputValidation:
     """Tests for input validation."""
 
@@ -446,6 +481,7 @@ class TestInputValidation:
 # Tests: errors and layers_skipped fields
 # ---------------------------------------------------------------------------
 
+
 class TestErrorsAndSkipped:
     """Tests for errors and layers_skipped in DetectionResult."""
 
@@ -458,8 +494,10 @@ class TestErrorsAndSkipped:
 
     def test_layers_skipped_when_no_key(self) -> None:
         """Should report skipped layers when keys are missing."""
-        with patch("gauntlet.detector.get_openai_key", return_value=None), \
-             patch("gauntlet.detector.get_anthropic_key", return_value=None):
+        with (
+            patch("gauntlet.detector.get_openai_key", return_value=None),
+            patch("gauntlet.detector.get_anthropic_key", return_value=None),
+        ):
             g = Gauntlet()
             result = g.detect("hello", layers=[1, 2, 3])
             assert 2 in result.layers_skipped
@@ -491,15 +529,23 @@ class TestErrorsAndSkipped:
 
         mock_l2 = MagicMock()
         mock_l2.detect.return_value = LayerResult(
-            is_injection=False, confidence=0.0, attack_type=None,
-            layer=2, latency_ms=1.0, error="OpenAI timeout",
+            is_injection=False,
+            confidence=0.0,
+            attack_type=None,
+            layer=2,
+            latency_ms=1.0,
+            error="OpenAI timeout",
         )
         g._embeddings = mock_l2
 
         mock_l3 = MagicMock()
         mock_l3.detect.return_value = LayerResult(
-            is_injection=False, confidence=0.0, attack_type=None,
-            layer=3, latency_ms=1.0, error="Anthropic auth error",
+            is_injection=False,
+            confidence=0.0,
+            attack_type=None,
+            layer=3,
+            latency_ms=1.0,
+            error="Anthropic auth error",
         )
         g._llm = mock_l3
 

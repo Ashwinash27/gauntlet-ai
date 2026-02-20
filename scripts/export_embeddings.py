@@ -66,7 +66,9 @@ def main() -> None:
 
     for i in range(0, len(texts), BATCH_SIZE):
         batch = texts[i : i + BATCH_SIZE]
-        print(f"  Embedding batch {i // BATCH_SIZE + 1}/{(len(texts) + BATCH_SIZE - 1) // BATCH_SIZE} ({len(batch)} texts)...")
+        print(
+            f"  Embedding batch {i // BATCH_SIZE + 1}/{(len(texts) + BATCH_SIZE - 1) // BATCH_SIZE} ({len(batch)} texts)..."
+        )
         embeddings = embed_batch(client, batch)
         all_embeddings.extend(embeddings)
 

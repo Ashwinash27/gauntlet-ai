@@ -130,9 +130,7 @@ def transform_whitespace(text: str, rng: random.Random) -> list[str]:
     return variants[:2]
 
 
-def transform_concatenation(
-    text: str, rng: random.Random, all_texts: list[str]
-) -> list[str]:
+def transform_concatenation(text: str, rng: random.Random, all_texts: list[str]) -> list[str]:
     """Combine two attack samples into one."""
     if len(all_texts) < 2:
         return []

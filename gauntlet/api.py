@@ -15,7 +15,6 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-
 _detector = None
 
 
@@ -23,6 +22,7 @@ def _get_detector():
     global _detector
     if _detector is None:
         from gauntlet.detector import Gauntlet
+
         _detector = Gauntlet()
     return _detector
 
@@ -31,6 +31,7 @@ def _get_detector():
 async def _lifespan(app: Any):
     """Initialize Gauntlet detector on startup."""
     from gauntlet._logging import setup_logging
+
     setup_logging()
     _get_detector()
     yield
@@ -74,8 +75,7 @@ def create_app():
         from fastapi import FastAPI
     except ImportError:
         raise ImportError(
-            "FastAPI is required for the API server. "
-            "Install with: pip install gauntlet-ai[api]"
+            "FastAPI is required for the API server. " "Install with: pip install gauntlet-ai[api]"
         )
 
     app = FastAPI(
@@ -97,9 +97,7 @@ def create_app():
     @app.post("/detect", response_model=DetectResponse)
     async def detect(body: DetectRequest):
         detector = _get_detector()
-        result = await asyncio.to_thread(
-            detector.detect, body.text, body.layers
-        )
+        result = await asyncio.to_thread(detector.detect, body.text, body.layers)
         return DetectResponse(
             is_injection=result.is_injection,
             confidence=result.confidence,

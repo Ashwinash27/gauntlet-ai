@@ -26,6 +26,7 @@ def client(_no_api_keys):
 
     # Reset singleton so tests get a fresh detector
     import gauntlet.api as api_module
+
     api_module._detector = None
 
     app = api_module.create_app()
@@ -102,9 +103,14 @@ async def test_detect_response_structure(client):
     assert resp.status_code == 200
     data = resp.json()
     required_fields = [
-        "is_injection", "confidence", "attack_type",
-        "detected_by_layer", "layer_results", "total_latency_ms",
-        "errors", "layers_skipped",
+        "is_injection",
+        "confidence",
+        "attack_type",
+        "detected_by_layer",
+        "layer_results",
+        "total_latency_ms",
+        "errors",
+        "layers_skipped",
     ]
     for field in required_fields:
         assert field in data, f"Missing field: {field}"

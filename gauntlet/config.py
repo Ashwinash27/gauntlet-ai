@@ -44,8 +44,9 @@ def _parse_toml(text: str) -> dict[str, str]:
         key = key.strip()
         value = value.strip()
         # Strip quotes
-        if (value.startswith('"') and value.endswith('"')) or \
-           (value.startswith("'") and value.endswith("'")):
+        if (value.startswith('"') and value.endswith('"')) or (
+            value.startswith("'") and value.endswith("'")
+        ):
             value = value[1:-1]
         result[key] = value
     return result

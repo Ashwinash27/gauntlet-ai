@@ -23,8 +23,7 @@ def serve() -> None:
         from mcp.types import TextContent, Tool
     except ImportError:
         raise ImportError(
-            "MCP server requires the mcp package. "
-            "Install with: pip install gauntlet-ai[mcp]"
+            "MCP server requires the mcp package. " "Install with: pip install gauntlet-ai[mcp]"
         )
 
     import asyncio
@@ -72,10 +71,12 @@ def serve() -> None:
         if name == "check_prompt":
             text = arguments.get("text", "")
             result = detector.detect(text)
-            return [TextContent(
-                type="text",
-                text=json.dumps(result.model_dump(), indent=2),
-            )]
+            return [
+                TextContent(
+                    type="text",
+                    text=json.dumps(result.model_dump(), indent=2),
+                )
+            ]
 
         elif name == "scan_file":
             filepath = Path(arguments.get("path", "")).resolve()
@@ -85,44 +86,56 @@ def serve() -> None:
             try:
                 filepath.relative_to(cwd)
             except ValueError:
-                return [TextContent(
-                    type="text",
-                    text=json.dumps({"error": f"Access denied: path must be within {cwd}"}),
-                )]
+                return [
+                    TextContent(
+                        type="text",
+                        text=json.dumps({"error": f"Access denied: path must be within {cwd}"}),
+                    )
+                ]
 
             # Block hidden files
             if any(part.startswith(".") for part in filepath.parts if part != "."):
-                return [TextContent(
-                    type="text",
-                    text=json.dumps({"error": "Access denied: cannot scan hidden files"}),
-                )]
+                return [
+                    TextContent(
+                        type="text",
+                        text=json.dumps({"error": "Access denied: cannot scan hidden files"}),
+                    )
+                ]
 
             if not filepath.exists():
-                return [TextContent(
-                    type="text",
-                    text=json.dumps({"error": f"File not found: {filepath}"}),
-                )]
+                return [
+                    TextContent(
+                        type="text",
+                        text=json.dumps({"error": f"File not found: {filepath}"}),
+                    )
+                ]
 
             try:
                 text = filepath.read_text()
             except Exception as e:
-                return [TextContent(
-                    type="text",
-                    text=json.dumps({"error": f"Failed to read file: {e}"}),
-                )]
+                return [
+                    TextContent(
+                        type="text",
+                        text=json.dumps({"error": f"Failed to read file: {e}"}),
+                    )
+                ]
 
             result = detector.detect(text)
             output = result.model_dump()
             output["file"] = str(filepath)
-            return [TextContent(
-                type="text",
-                text=json.dumps(output, indent=2),
-            )]
+            return [
+                TextContent(
+                    type="text",
+                    text=json.dumps(output, indent=2),
+                )
+            ]
 
-        return [TextContent(
-            type="text",
-            text=json.dumps({"error": f"Unknown tool: {name}"}),
-        )]
+        return [
+            TextContent(
+                type="text",
+                text=json.dumps({"error": f"Unknown tool: {name}"}),
+            )
+        ]
 
     async def _run() -> None:
         async with stdio_server() as (read_stream, write_stream):

@@ -91,6 +91,7 @@ class EmbeddingsDetector:
 
         if meta_path.exists():
             import json
+
             with open(meta_path) as f:
                 self._metadata = json.load(f)
         else:
@@ -111,7 +112,9 @@ class EmbeddingsDetector:
         )
         return response.data[0].embedding
 
-    def _cosine_similarity(self, query: list[float], threshold: float | None = None) -> list[tuple[int, float]]:
+    def _cosine_similarity(
+        self, query: list[float], threshold: float | None = None
+    ) -> list[tuple[int, float]]:
         """Compute cosine similarity between query and all stored embeddings.
 
         Args:

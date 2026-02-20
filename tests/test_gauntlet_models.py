@@ -5,10 +5,10 @@ from pydantic import ValidationError
 
 from gauntlet.models import DetectionResult, LayerResult
 
-
 # ---------------------------------------------------------------------------
 # Tests: LayerResult
 # ---------------------------------------------------------------------------
+
 
 class TestLayerResult:
     """Tests for the LayerResult model."""
@@ -165,6 +165,7 @@ class TestLayerResult:
 # ---------------------------------------------------------------------------
 # Tests: DetectionResult
 # ---------------------------------------------------------------------------
+
 
 class TestDetectionResult:
     """Tests for the DetectionResult model."""

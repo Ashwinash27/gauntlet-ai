@@ -78,6 +78,7 @@ class Gauntlet:
         if redis_url:
             try:
                 from gauntlet.cache import RedisCache
+
                 self._cache = RedisCache(url=redis_url, ttl=cache_ttl)
             except Exception as e:
                 logger.warning("Failed to initialize cache: %s", type(e).__name__)
@@ -101,6 +102,7 @@ class Gauntlet:
         if self._embeddings is None and self._openai_key:
             try:
                 from gauntlet.layers.embeddings import EmbeddingsDetector
+
                 self._embeddings = EmbeddingsDetector(
                     openai_key=self._openai_key,
                     threshold=self._embedding_threshold,
@@ -117,6 +119,7 @@ class Gauntlet:
         if self._llm is None and self._anthropic_key:
             try:
                 from gauntlet.layers.llm_judge import LLMDetector
+
                 self._llm = LLMDetector(
                     anthropic_key=self._anthropic_key,
                     model=self._llm_model,
@@ -137,12 +140,14 @@ class Gauntlet:
             try:
                 import numpy  # noqa: F401
                 import openai  # noqa: F401
+
                 layers.append(2)
             except ImportError:
                 pass
         if self._anthropic_key:
             try:
                 import anthropic  # noqa: F401
+
                 layers.append(3)
             except ImportError:
                 pass
@@ -216,8 +221,12 @@ class Gauntlet:
             l1_result = self._rules.detect(text)
             layer_results.append(l1_result)
             _log_detection_event(
-                text, 1, l1_result.latency_ms, l1_result.is_injection,
-                l1_result.attack_type, l1_result.confidence,
+                text,
+                1,
+                l1_result.latency_ms,
+                l1_result.is_injection,
+                l1_result.attack_type,
+                l1_result.confidence,
             )
 
             if l1_result.error:
@@ -238,8 +247,12 @@ class Gauntlet:
                 l2_result = embeddings.detect(text)
                 layer_results.append(l2_result)
                 _log_detection_event(
-                    text, 2, l2_result.latency_ms, l2_result.is_injection,
-                    l2_result.attack_type, l2_result.confidence,
+                    text,
+                    2,
+                    l2_result.latency_ms,
+                    l2_result.is_injection,
+                    l2_result.attack_type,
+                    l2_result.confidence,
                 )
 
                 if l2_result.error:
@@ -262,8 +275,12 @@ class Gauntlet:
                 l3_result = llm.detect(text)
                 layer_results.append(l3_result)
                 _log_detection_event(
-                    text, 3, l3_result.latency_ms, l3_result.is_injection,
-                    l3_result.attack_type, l3_result.confidence,
+                    text,
+                    3,
+                    l3_result.latency_ms,
+                    l3_result.is_injection,
+                    l3_result.attack_type,
+                    l3_result.confidence,
                 )
 
                 if l3_result.error:

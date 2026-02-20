@@ -2,6 +2,7 @@
 
 Usage: PYTHONUNBUFFERED=1 python -m evaluation.run_pint_test_benchmark
 """
+
 import json
 import os
 import statistics
@@ -175,7 +176,7 @@ def main():
     print("SUMMARY — PINT Test Set (held-out)")
     print("=" * 60)
     header = "| Config | Precision | Recall | F1     | FPR    | Avg Latency |"
-    sep    = "|--------|-----------|--------|--------|--------|-------------|"
+    sep = "|--------|-----------|--------|--------|--------|-------------|"
     print(header)
     print(sep)
     for config_name, _ in configs:

@@ -14,8 +14,13 @@ class TestJSONFormatter:
 
     def test_output_is_valid_json(self) -> None:
         record = logging.LogRecord(
-            name="gauntlet", level=logging.INFO, pathname="", lineno=0,
-            msg="hello", args=(), exc_info=None,
+            name="gauntlet",
+            level=logging.INFO,
+            pathname="",
+            lineno=0,
+            msg="hello",
+            args=(),
+            exc_info=None,
         )
         fmt = JSONFormatter()
         out = fmt.format(record)
@@ -27,8 +32,13 @@ class TestJSONFormatter:
 
     def test_includes_gauntlet_extra(self) -> None:
         record = logging.LogRecord(
-            name="gauntlet", level=logging.INFO, pathname="", lineno=0,
-            msg="event", args=(), exc_info=None,
+            name="gauntlet",
+            level=logging.INFO,
+            pathname="",
+            lineno=0,
+            msg="event",
+            args=(),
+            exc_info=None,
         )
         record._gauntlet_extra = {"event": "detection", "layer": 1}
         fmt = JSONFormatter()
@@ -38,8 +48,13 @@ class TestJSONFormatter:
 
     def test_timestamp_is_utc_iso(self) -> None:
         record = logging.LogRecord(
-            name="gauntlet", level=logging.INFO, pathname="", lineno=0,
-            msg="ts", args=(), exc_info=None,
+            name="gauntlet",
+            level=logging.INFO,
+            pathname="",
+            lineno=0,
+            msg="ts",
+            args=(),
+            exc_info=None,
         )
         fmt = JSONFormatter()
         data = json.loads(fmt.format(record))

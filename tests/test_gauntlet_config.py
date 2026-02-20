@@ -16,10 +16,10 @@ from gauntlet.config import (
 )
 from gauntlet.exceptions import ConfigError
 
-
 # ---------------------------------------------------------------------------
 # Tests: TOML parsing
 # ---------------------------------------------------------------------------
+
 
 class TestParseToml:
     """Tests for the minimal TOML parser."""
@@ -97,6 +97,7 @@ class TestParseToml:
 # Tests: set_config_value / get_config_value
 # ---------------------------------------------------------------------------
 
+
 class TestSetGetConfig:
     """Tests for set_config_value and get_config_value."""
 
@@ -105,8 +106,10 @@ class TestSetGetConfig:
         config_file = tmp_path / "config.toml"
         config_dir = tmp_path
 
-        with patch("gauntlet.config._CONFIG_FILE", config_file), \
-             patch("gauntlet.config._CONFIG_DIR", config_dir):
+        with (
+            patch("gauntlet.config._CONFIG_FILE", config_file),
+            patch("gauntlet.config._CONFIG_DIR", config_dir),
+        ):
             set_config_value("openai_key", "sk-test-12345")
             value = get_config_value("openai_key")
             assert value == "sk-test-12345"
@@ -116,8 +119,10 @@ class TestSetGetConfig:
         config_file = tmp_path / "config.toml"
         config_dir = tmp_path
 
-        with patch("gauntlet.config._CONFIG_FILE", config_file), \
-             patch("gauntlet.config._CONFIG_DIR", config_dir):
+        with (
+            patch("gauntlet.config._CONFIG_FILE", config_file),
+            patch("gauntlet.config._CONFIG_DIR", config_dir),
+        ):
             set_config_value("openai_key", "sk-old")
             set_config_value("openai_key", "sk-new")
             value = get_config_value("openai_key")
@@ -128,8 +133,10 @@ class TestSetGetConfig:
         config_file = tmp_path / "config.toml"
         config_dir = tmp_path
 
-        with patch("gauntlet.config._CONFIG_FILE", config_file), \
-             patch("gauntlet.config._CONFIG_DIR", config_dir):
+        with (
+            patch("gauntlet.config._CONFIG_FILE", config_file),
+            patch("gauntlet.config._CONFIG_DIR", config_dir),
+        ):
             set_config_value("openai_key", "sk-openai")
             set_config_value("anthropic_key", "sk-ant-anthropic")
 
@@ -141,9 +148,11 @@ class TestSetGetConfig:
         config_file = tmp_path / "config.toml"
         config_dir = tmp_path
 
-        with patch("gauntlet.config._CONFIG_FILE", config_file), \
-             patch("gauntlet.config._CONFIG_DIR", config_dir), \
-             patch.dict(os.environ, {}, clear=True):
+        with (
+            patch("gauntlet.config._CONFIG_FILE", config_file),
+            patch("gauntlet.config._CONFIG_DIR", config_dir),
+            patch.dict(os.environ, {}, clear=True),
+        ):
             # Remove any real env vars
             env = os.environ.copy()
             for k in ["OPENAI_API_KEY", "ANTHROPIC_API_KEY"]:
@@ -157,6 +166,7 @@ class TestSetGetConfig:
 # Tests: Env var fallback
 # ---------------------------------------------------------------------------
 
+
 class TestEnvVarFallback:
     """Tests for environment variable fallback."""
 
@@ -165,9 +175,11 @@ class TestEnvVarFallback:
         config_file = tmp_path / "config.toml"
         config_dir = tmp_path
 
-        with patch("gauntlet.config._CONFIG_FILE", config_file), \
-             patch("gauntlet.config._CONFIG_DIR", config_dir), \
-             patch.dict(os.environ, {"OPENAI_API_KEY": "sk-from-env"}):
+        with (
+            patch("gauntlet.config._CONFIG_FILE", config_file),
+            patch("gauntlet.config._CONFIG_DIR", config_dir),
+            patch.dict(os.environ, {"OPENAI_API_KEY": "sk-from-env"}),
+        ):
             value = get_config_value("openai_key")
             assert value == "sk-from-env"
 
@@ -176,9 +188,11 @@ class TestEnvVarFallback:
         config_file = tmp_path / "config.toml"
         config_dir = tmp_path
 
-        with patch("gauntlet.config._CONFIG_FILE", config_file), \
-             patch("gauntlet.config._CONFIG_DIR", config_dir), \
-             patch.dict(os.environ, {"OPENAI_API_KEY": "sk-env-value"}):
+        with (
+            patch("gauntlet.config._CONFIG_FILE", config_file),
+            patch("gauntlet.config._CONFIG_DIR", config_dir),
+            patch.dict(os.environ, {"OPENAI_API_KEY": "sk-env-value"}),
+        ):
             set_config_value("openai_key", "sk-file-value")
             value = get_config_value("openai_key")
             assert value == "sk-file-value"
@@ -188,9 +202,11 @@ class TestEnvVarFallback:
         config_file = tmp_path / "config.toml"
         config_dir = tmp_path
 
-        with patch("gauntlet.config._CONFIG_FILE", config_file), \
-             patch("gauntlet.config._CONFIG_DIR", config_dir), \
-             patch.dict(os.environ, {"ANTHROPIC_API_KEY": "sk-ant-from-env"}):
+        with (
+            patch("gauntlet.config._CONFIG_FILE", config_file),
+            patch("gauntlet.config._CONFIG_DIR", config_dir),
+            patch.dict(os.environ, {"ANTHROPIC_API_KEY": "sk-ant-from-env"}),
+        ):
             value = get_config_value("anthropic_key")
             assert value == "sk-ant-from-env"
 
@@ -198,6 +214,7 @@ class TestEnvVarFallback:
 # ---------------------------------------------------------------------------
 # Tests: list_config
 # ---------------------------------------------------------------------------
+
 
 class TestListConfig:
     """Tests for list_config."""
@@ -207,19 +224,30 @@ class TestListConfig:
         config_file = tmp_path / "config.toml"
         config_dir = tmp_path
 
-        with patch("gauntlet.config._CONFIG_FILE", config_file), \
-             patch("gauntlet.config._CONFIG_DIR", config_dir), \
-             patch.dict(os.environ, {}, clear=True):
+        with (
+            patch("gauntlet.config._CONFIG_FILE", config_file),
+            patch("gauntlet.config._CONFIG_DIR", config_dir),
+            patch.dict(os.environ, {}, clear=True),
+        ):
             env = os.environ.copy()
-            for k in ["OPENAI_API_KEY", "ANTHROPIC_API_KEY",
-                       "GAUNTLET_EMBEDDING_MODEL", "GAUNTLET_EMBEDDING_THRESHOLD",
-                       "GAUNTLET_LLM_MODEL", "GAUNTLET_LLM_TIMEOUT"]:
+            for k in [
+                "OPENAI_API_KEY",
+                "ANTHROPIC_API_KEY",
+                "GAUNTLET_EMBEDDING_MODEL",
+                "GAUNTLET_EMBEDDING_THRESHOLD",
+                "GAUNTLET_LLM_MODEL",
+                "GAUNTLET_LLM_TIMEOUT",
+            ]:
                 env.pop(k, None)
             with patch.dict(os.environ, env, clear=True):
                 result = list_config()
                 expected_keys = {
-                    "openai_key", "anthropic_key", "embedding_model",
-                    "embedding_threshold", "llm_model", "llm_timeout",
+                    "openai_key",
+                    "anthropic_key",
+                    "embedding_model",
+                    "embedding_threshold",
+                    "llm_model",
+                    "llm_timeout",
                 }
                 assert set(result.keys()) == expected_keys
 
@@ -228,8 +256,10 @@ class TestListConfig:
         config_file = tmp_path / "config.toml"
         config_dir = tmp_path
 
-        with patch("gauntlet.config._CONFIG_FILE", config_file), \
-             patch("gauntlet.config._CONFIG_DIR", config_dir):
+        with (
+            patch("gauntlet.config._CONFIG_FILE", config_file),
+            patch("gauntlet.config._CONFIG_DIR", config_dir),
+        ):
             set_config_value("embedding_model", "text-embedding-3-large")
             result = list_config()
             assert "config file" in result["embedding_model"]
@@ -239,9 +269,11 @@ class TestListConfig:
         config_file = tmp_path / "config.toml"
         config_dir = tmp_path
 
-        with patch("gauntlet.config._CONFIG_FILE", config_file), \
-             patch("gauntlet.config._CONFIG_DIR", config_dir), \
-             patch.dict(os.environ, {"GAUNTLET_LLM_MODEL": "claude-3-sonnet-20240229"}):
+        with (
+            patch("gauntlet.config._CONFIG_FILE", config_file),
+            patch("gauntlet.config._CONFIG_DIR", config_dir),
+            patch.dict(os.environ, {"GAUNTLET_LLM_MODEL": "claude-3-sonnet-20240229"}),
+        ):
             result = list_config()
             assert "env: GAUNTLET_LLM_MODEL" in result["llm_model"]
 
@@ -250,13 +282,20 @@ class TestListConfig:
         config_file = tmp_path / "config.toml"
         config_dir = tmp_path
 
-        with patch("gauntlet.config._CONFIG_FILE", config_file), \
-             patch("gauntlet.config._CONFIG_DIR", config_dir), \
-             patch.dict(os.environ, {}, clear=True):
+        with (
+            patch("gauntlet.config._CONFIG_FILE", config_file),
+            patch("gauntlet.config._CONFIG_DIR", config_dir),
+            patch.dict(os.environ, {}, clear=True),
+        ):
             env = os.environ.copy()
-            for k in ["OPENAI_API_KEY", "ANTHROPIC_API_KEY",
-                       "GAUNTLET_EMBEDDING_MODEL", "GAUNTLET_EMBEDDING_THRESHOLD",
-                       "GAUNTLET_LLM_MODEL", "GAUNTLET_LLM_TIMEOUT"]:
+            for k in [
+                "OPENAI_API_KEY",
+                "ANTHROPIC_API_KEY",
+                "GAUNTLET_EMBEDDING_MODEL",
+                "GAUNTLET_EMBEDDING_THRESHOLD",
+                "GAUNTLET_LLM_MODEL",
+                "GAUNTLET_LLM_TIMEOUT",
+            ]:
                 env.pop(k, None)
             with patch.dict(os.environ, env, clear=True):
                 result = list_config()
@@ -269,6 +308,7 @@ class TestListConfig:
 # Tests: Key masking
 # ---------------------------------------------------------------------------
 
+
 class TestKeyMasking:
     """Tests for sensitive key masking in list_config."""
 
@@ -277,8 +317,10 @@ class TestKeyMasking:
         config_file = tmp_path / "config.toml"
         config_dir = tmp_path
 
-        with patch("gauntlet.config._CONFIG_FILE", config_file), \
-             patch("gauntlet.config._CONFIG_DIR", config_dir):
+        with (
+            patch("gauntlet.config._CONFIG_FILE", config_file),
+            patch("gauntlet.config._CONFIG_DIR", config_dir),
+        ):
             set_config_value("openai_key", "sk-abcdefghijklmnopqrstuvwxyz")
             result = list_config()
             value = result["openai_key"]
@@ -292,8 +334,10 @@ class TestKeyMasking:
         config_file = tmp_path / "config.toml"
         config_dir = tmp_path
 
-        with patch("gauntlet.config._CONFIG_FILE", config_file), \
-             patch("gauntlet.config._CONFIG_DIR", config_dir):
+        with (
+            patch("gauntlet.config._CONFIG_FILE", config_file),
+            patch("gauntlet.config._CONFIG_DIR", config_dir),
+        ):
             set_config_value("openai_key", "short")
             result = list_config()
             value = result["openai_key"]
@@ -304,9 +348,11 @@ class TestKeyMasking:
         config_file = tmp_path / "config.toml"
         config_dir = tmp_path
 
-        with patch("gauntlet.config._CONFIG_FILE", config_file), \
-             patch("gauntlet.config._CONFIG_DIR", config_dir), \
-             patch.dict(os.environ, {"ANTHROPIC_API_KEY": "sk-ant-long-secret-key-value-here"}):
+        with (
+            patch("gauntlet.config._CONFIG_FILE", config_file),
+            patch("gauntlet.config._CONFIG_DIR", config_dir),
+            patch.dict(os.environ, {"ANTHROPIC_API_KEY": "sk-ant-long-secret-key-value-here"}),
+        ):
             result = list_config()
             value = result["anthropic_key"]
             assert "..." in value
@@ -317,8 +363,10 @@ class TestKeyMasking:
         config_file = tmp_path / "config.toml"
         config_dir = tmp_path
 
-        with patch("gauntlet.config._CONFIG_FILE", config_file), \
-             patch("gauntlet.config._CONFIG_DIR", config_dir):
+        with (
+            patch("gauntlet.config._CONFIG_FILE", config_file),
+            patch("gauntlet.config._CONFIG_DIR", config_dir),
+        ):
             set_config_value("embedding_model", "text-embedding-3-small")
             result = list_config()
             value = result["embedding_model"]
@@ -330,6 +378,7 @@ class TestKeyMasking:
 # Tests: Invalid key handling
 # ---------------------------------------------------------------------------
 
+
 class TestInvalidKeyHandling:
     """Tests for handling invalid config keys."""
 
@@ -338,8 +387,10 @@ class TestInvalidKeyHandling:
         config_file = tmp_path / "config.toml"
         config_dir = tmp_path
 
-        with patch("gauntlet.config._CONFIG_FILE", config_file), \
-             patch("gauntlet.config._CONFIG_DIR", config_dir):
+        with (
+            patch("gauntlet.config._CONFIG_FILE", config_file),
+            patch("gauntlet.config._CONFIG_DIR", config_dir),
+        ):
             with pytest.raises(ConfigError, match="Unknown config key"):
                 set_config_value("totally_invalid_key", "some-value")
 
@@ -348,8 +399,10 @@ class TestInvalidKeyHandling:
         config_file = tmp_path / "config.toml"
         config_dir = tmp_path
 
-        with patch("gauntlet.config._CONFIG_FILE", config_file), \
-             patch("gauntlet.config._CONFIG_DIR", config_dir):
+        with (
+            patch("gauntlet.config._CONFIG_FILE", config_file),
+            patch("gauntlet.config._CONFIG_DIR", config_dir),
+        ):
             with pytest.raises(ConfigError) as exc_info:
                 set_config_value("bad_key", "value")
             error_msg = str(exc_info.value)
@@ -361,8 +414,10 @@ class TestInvalidKeyHandling:
         config_file = tmp_path / "config.toml"
         config_dir = tmp_path
 
-        with patch("gauntlet.config._CONFIG_FILE", config_file), \
-             patch("gauntlet.config._CONFIG_DIR", config_dir):
+        with (
+            patch("gauntlet.config._CONFIG_FILE", config_file),
+            patch("gauntlet.config._CONFIG_DIR", config_dir),
+        ):
             # Unknown key is not in _KEY_MAP, so no env fallback
             value = get_config_value("nonexistent_key")
             assert value is None
@@ -371,6 +426,7 @@ class TestInvalidKeyHandling:
 # ---------------------------------------------------------------------------
 # Tests: load_config
 # ---------------------------------------------------------------------------
+
 
 class TestLoadConfig:
     """Tests for load_config."""
@@ -397,6 +453,7 @@ class TestLoadConfig:
 # Tests: _write_toml
 # ---------------------------------------------------------------------------
 
+
 class TestWriteToml:
     """Tests for the TOML writer."""
 
@@ -405,8 +462,10 @@ class TestWriteToml:
         config_dir = tmp_path / "new_dir"
         config_file = config_dir / "config.toml"
 
-        with patch("gauntlet.config._CONFIG_DIR", config_dir), \
-             patch("gauntlet.config._CONFIG_FILE", config_file):
+        with (
+            patch("gauntlet.config._CONFIG_DIR", config_dir),
+            patch("gauntlet.config._CONFIG_FILE", config_file),
+        ):
             _write_toml({"openai_key": "sk-test"})
             assert config_dir.exists()
             assert config_file.exists()
@@ -416,8 +475,10 @@ class TestWriteToml:
         config_file = tmp_path / "config.toml"
         config_dir = tmp_path
 
-        with patch("gauntlet.config._CONFIG_DIR", config_dir), \
-             patch("gauntlet.config._CONFIG_FILE", config_file):
+        with (
+            patch("gauntlet.config._CONFIG_DIR", config_dir),
+            patch("gauntlet.config._CONFIG_FILE", config_file),
+        ):
             _write_toml({"openai_key": "sk-abc", "anthropic_key": "sk-ant-xyz"})
 
             content = config_file.read_text()
@@ -430,8 +491,10 @@ class TestWriteToml:
         config_file = tmp_path / "config.toml"
         config_dir = tmp_path
 
-        with patch("gauntlet.config._CONFIG_DIR", config_dir), \
-             patch("gauntlet.config._CONFIG_FILE", config_file):
+        with (
+            patch("gauntlet.config._CONFIG_DIR", config_dir),
+            patch("gauntlet.config._CONFIG_FILE", config_file),
+        ):
             _write_toml({"openai_key": "sk-test"})
 
             content = config_file.read_text()

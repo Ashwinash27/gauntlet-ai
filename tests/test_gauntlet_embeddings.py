@@ -9,10 +9,10 @@ import pytest
 
 from gauntlet.models import LayerResult
 
-
 # ---------------------------------------------------------------------------
 # Helpers for creating fake embeddings data
 # ---------------------------------------------------------------------------
+
 
 def _make_embeddings_file(tmp_path: Path, n_vectors: int = 5, dim: int = 8) -> Path:
     """Create a temporary .npz file with random embeddings."""
@@ -30,11 +30,13 @@ def _make_metadata_file(tmp_path: Path, n_vectors: int = 5) -> Path:
     """Create a temporary metadata JSON file."""
     patterns = []
     for i in range(n_vectors):
-        patterns.append({
-            "category": f"category_{i}",
-            "subcategory": f"sub_{i}",
-            "label": f"label_{i}",
-        })
+        patterns.append(
+            {
+                "category": f"category_{i}",
+                "subcategory": f"sub_{i}",
+                "label": f"label_{i}",
+            }
+        )
     path = tmp_path / "metadata.json"
     path.write_text(json.dumps({"patterns": patterns}))
     return path
@@ -52,6 +54,7 @@ def _fake_openai_embedding(dim: int = 8) -> list[float]:
 # Fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture
 def embeddings_files(tmp_path: Path) -> tuple[Path, Path]:
     """Create temporary embeddings and metadata files."""
@@ -64,11 +67,14 @@ def embeddings_files(tmp_path: Path) -> tuple[Path, Path]:
 # Tests
 # ---------------------------------------------------------------------------
 
+
 class TestEmbeddingsDetectorInit:
     """Tests for EmbeddingsDetector initialization."""
 
     @patch("openai.OpenAI")
-    def test_init_with_embeddings_file(self, mock_openai_cls, embeddings_files: tuple[Path, Path]) -> None:
+    def test_init_with_embeddings_file(
+        self, mock_openai_cls, embeddings_files: tuple[Path, Path]
+    ) -> None:
         """Should load embeddings and metadata when files exist."""
         from gauntlet.layers.embeddings import EmbeddingsDetector
 
@@ -99,7 +105,9 @@ class TestEmbeddingsDetectorInit:
         assert detector._metadata is None
 
     @patch("openai.OpenAI")
-    def test_init_default_threshold(self, mock_openai_cls, embeddings_files: tuple[Path, Path]) -> None:
+    def test_init_default_threshold(
+        self, mock_openai_cls, embeddings_files: tuple[Path, Path]
+    ) -> None:
         """Should use default threshold of 0.80."""
         from gauntlet.layers.embeddings import EmbeddingsDetector
 
@@ -112,7 +120,9 @@ class TestEmbeddingsDetectorInit:
         assert detector.threshold == 0.80
 
     @patch("openai.OpenAI")
-    def test_init_custom_threshold(self, mock_openai_cls, embeddings_files: tuple[Path, Path]) -> None:
+    def test_init_custom_threshold(
+        self, mock_openai_cls, embeddings_files: tuple[Path, Path]
+    ) -> None:
         """Should accept custom threshold."""
         from gauntlet.layers.embeddings import EmbeddingsDetector
 
@@ -211,9 +221,7 @@ class TestDetect:
     """Tests for the detect() method."""
 
     @patch("openai.OpenAI")
-    def test_detect_injection_above_threshold(
-        self, mock_openai_cls, tmp_path: Path
-    ) -> None:
+    def test_detect_injection_above_threshold(self, mock_openai_cls, tmp_path: Path) -> None:
         """Should detect injection when similarity exceeds threshold."""
         from gauntlet.layers.embeddings import EmbeddingsDetector
 
@@ -284,9 +292,7 @@ class TestDetect:
         assert result.confidence == 0.0
 
     @patch("openai.OpenAI")
-    def test_detect_no_embeddings_loaded(
-        self, mock_openai_cls, tmp_path: Path
-    ) -> None:
+    def test_detect_no_embeddings_loaded(self, mock_openai_cls, tmp_path: Path) -> None:
         """Should return non-injection result with error when no embeddings."""
         from gauntlet.layers.embeddings import EmbeddingsDetector
 
@@ -471,9 +477,7 @@ class TestGetMatchMetadata:
         assert meta["category"] == "unknown"
 
     @patch("openai.OpenAI")
-    def test_get_match_metadata_no_metadata(
-        self, mock_openai_cls, tmp_path: Path
-    ) -> None:
+    def test_get_match_metadata_no_metadata(self, mock_openai_cls, tmp_path: Path) -> None:
         """Should return defaults when no metadata loaded."""
         from gauntlet.layers.embeddings import EmbeddingsDetector
 

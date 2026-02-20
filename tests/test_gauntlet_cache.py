@@ -7,10 +7,10 @@ import pytest
 
 from gauntlet.models import DetectionResult, LayerResult
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _sample_result(is_injection: bool = True) -> DetectionResult:
     """Build a DetectionResult for test assertions."""
@@ -38,6 +38,7 @@ def _expected_key(text: str, layers: list[int], prefix: str = "gauntlet") -> str
 # Fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture
 def mock_redis_client():
     """Create a mock Redis client with ping() succeeding."""
@@ -53,6 +54,7 @@ def cache(mock_redis_client):
     with patch("redis.Redis") as MockRedisClass:
         MockRedisClass.from_url.return_value = mock_redis_client
         from gauntlet.cache import RedisCache
+
         c = RedisCache(url="redis://localhost:6379/0", ttl=600)
     return c
 
@@ -60,6 +62,7 @@ def cache(mock_redis_client):
 # ---------------------------------------------------------------------------
 # Tests: RedisCache unit tests
 # ---------------------------------------------------------------------------
+
 
 class TestRedisCacheInit:
     """Tests for RedisCache initialization."""
@@ -74,6 +77,7 @@ class TestRedisCacheInit:
             # Force a fresh import
             import importlib
             import gauntlet.cache
+
             importlib.reload(gauntlet.cache)
             c = gauntlet.cache.RedisCache(url="redis://localhost:6379/0")
             assert c._available is False
@@ -85,6 +89,7 @@ class TestRedisCacheInit:
             mock_client.ping.side_effect = ConnectionError("Connection refused")
             MockRedisClass.from_url.return_value = mock_client
             from gauntlet.cache import RedisCache
+
             c = RedisCache(url="redis://bad-host:6379/0")
         assert c._available is False
 
@@ -197,34 +202,44 @@ class TestRedisCacheSet:
 # Tests: Integration with Gauntlet detector
 # ---------------------------------------------------------------------------
 
+
 class TestGauntletCacheIntegration:
     """Tests for cache integration in the Gauntlet detector."""
 
     def test_no_cache_without_redis_url(self):
         """Gauntlet without redis_url should have no cache (backward compat)."""
-        with patch("gauntlet.detector.get_openai_key", return_value=None), \
-             patch("gauntlet.detector.get_anthropic_key", return_value=None):
+        with (
+            patch("gauntlet.detector.get_openai_key", return_value=None),
+            patch("gauntlet.detector.get_anthropic_key", return_value=None),
+        ):
             from gauntlet.detector import Gauntlet
+
             g = Gauntlet()
         assert g._cache is None
 
     def test_cache_initialized_with_redis_url(self):
         """Gauntlet with redis_url should initialize cache."""
-        with patch("gauntlet.detector.get_openai_key", return_value=None), \
-             patch("gauntlet.detector.get_anthropic_key", return_value=None), \
-             patch("redis.Redis") as MockRedisClass:
+        with (
+            patch("gauntlet.detector.get_openai_key", return_value=None),
+            patch("gauntlet.detector.get_anthropic_key", return_value=None),
+            patch("redis.Redis") as MockRedisClass,
+        ):
             mock_client = MagicMock()
             mock_client.ping.return_value = True
             MockRedisClass.from_url.return_value = mock_client
             from gauntlet.detector import Gauntlet
+
             g = Gauntlet(redis_url="redis://localhost:6379/0")
         assert g._cache is not None
 
     def test_cache_hit_skips_cascade(self):
         """When cache returns a result, cascade layers should not run."""
-        with patch("gauntlet.detector.get_openai_key", return_value=None), \
-             patch("gauntlet.detector.get_anthropic_key", return_value=None):
+        with (
+            patch("gauntlet.detector.get_openai_key", return_value=None),
+            patch("gauntlet.detector.get_anthropic_key", return_value=None),
+        ):
             from gauntlet.detector import Gauntlet
+
             g = Gauntlet()
 
         # Inject a mock cache
@@ -247,9 +262,12 @@ class TestGauntletCacheIntegration:
 
     def test_cache_miss_runs_cascade_and_stores(self):
         """On cache miss, cascade runs and result is stored in cache."""
-        with patch("gauntlet.detector.get_openai_key", return_value=None), \
-             patch("gauntlet.detector.get_anthropic_key", return_value=None):
+        with (
+            patch("gauntlet.detector.get_openai_key", return_value=None),
+            patch("gauntlet.detector.get_anthropic_key", return_value=None),
+        ):
             from gauntlet.detector import Gauntlet
+
             g = Gauntlet()
 
         mock_cache = MagicMock()
@@ -267,9 +285,12 @@ class TestGauntletCacheIntegration:
 
     def test_cache_stores_benign_results(self):
         """Benign (no detection) results should also be cached."""
-        with patch("gauntlet.detector.get_openai_key", return_value=None), \
-             patch("gauntlet.detector.get_anthropic_key", return_value=None):
+        with (
+            patch("gauntlet.detector.get_openai_key", return_value=None),
+            patch("gauntlet.detector.get_anthropic_key", return_value=None),
+        ):
             from gauntlet.detector import Gauntlet
+
             g = Gauntlet()
 
         mock_cache = MagicMock()
@@ -283,9 +304,12 @@ class TestGauntletCacheIntegration:
 
     def test_empty_text_skips_cache(self):
         """Empty text should return early without consulting cache."""
-        with patch("gauntlet.detector.get_openai_key", return_value=None), \
-             patch("gauntlet.detector.get_anthropic_key", return_value=None):
+        with (
+            patch("gauntlet.detector.get_openai_key", return_value=None),
+            patch("gauntlet.detector.get_anthropic_key", return_value=None),
+        ):
             from gauntlet.detector import Gauntlet
+
             g = Gauntlet()
 
         mock_cache = MagicMock()
