@@ -11,7 +11,7 @@
 
 ## The Problem
 
-When you build applications on top of large language models, your users interact with the model through natural language. That same interface is also the attack surface. A malicious user can embed hidden instructions in their input — asking your model to ignore its system prompt, leak confidential context, or behave in ways you never intended. This is prompt injection: the equivalent of SQL injection, but for AI.
+When you build applications on top of large language models, your users interact with the model through natural language. That same interface is also the attack surface. A malicious user can embed hidden instructions in their input, asking your model to ignore its system prompt, leak confidential context, or behave in ways you never intended. This is prompt injection: the equivalent of SQL injection, but for AI.
 
 It is one of the most critical and least solved vulnerabilities in production LLM systems. It cannot be patched at the model level alone.
 
