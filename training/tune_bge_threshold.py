@@ -56,15 +56,19 @@ def main():
     # Load validation split
     print("\n[3/4] Loading + encoding validation split...")
     val = pd.read_json(SPLITS_DIR / "val.jsonl", lines=True)
-    print(f"  Val samples: {len(val)} (injection: {(val['label']==1).sum()}, benign: {(val['label']==0).sum()})")
+    print(
+        f"  Val samples: {len(val)} (injection: {(val['label']==1).sum()}, benign: {(val['label']==0).sum()})"
+    )
 
     # Encode val texts
     val_texts = val["text"].tolist()
     val_labels = val["label"].values
 
     val_embeddings = model.encode(
-        val_texts, normalize_embeddings=True,
-        batch_size=64, show_progress_bar=True,
+        val_texts,
+        normalize_embeddings=True,
+        batch_size=64,
+        show_progress_bar=True,
     )
     print(f"  Encoded: {val_embeddings.shape}")
 
@@ -74,8 +78,10 @@ def main():
     similarities = val_embeddings @ attack_vectors.T
     max_sims = similarities.max(axis=1)
 
-    print(f"  Max similarity stats: mean={max_sims.mean():.4f}, "
-          f"std={max_sims.std():.4f}, min={max_sims.min():.4f}, max={max_sims.max():.4f}")
+    print(
+        f"  Max similarity stats: mean={max_sims.mean():.4f}, "
+        f"std={max_sims.std():.4f}, min={max_sims.min():.4f}, max={max_sims.max():.4f}"
+    )
 
     # Injection vs benign similarity distributions
     inj_sims = max_sims[val_labels == 1]
@@ -96,8 +102,9 @@ def main():
     for threshold in thresholds:
         preds = (max_sims >= threshold).astype(int)
         f1 = f1_score(val_labels, preds, average="binary", pos_label=1)
-        precision = precision_score(val_labels, preds, average="binary",
-                                     pos_label=1, zero_division=0)
+        precision = precision_score(
+            val_labels, preds, average="binary", pos_label=1, zero_division=0
+        )
         recall = recall_score(val_labels, preds, average="binary", pos_label=1)
         recall_benign = recall_score(val_labels, preds, average="binary", pos_label=0)
         fpr = 1.0 - recall_benign
@@ -128,8 +135,10 @@ def main():
     print("-" * 50)
     for r in results:
         marker = " <-- BEST" if r["threshold"] == round(best_threshold, 3) else ""
-        print(f"  {r['threshold']:>8.3f} {r['f1']:>8.5f} {r['precision']:>10.5f} "
-              f"{r['recall']:>8.5f} {r['fpr']:>8.5f}{marker}")
+        print(
+            f"  {r['threshold']:>8.3f} {r['f1']:>8.5f} {r['precision']:>10.5f} "
+            f"{r['recall']:>8.5f} {r['fpr']:>8.5f}{marker}"
+        )
 
     print(f"\n{'=' * 60}")
     print(f"Best threshold: {best_threshold:.3f}")
@@ -162,6 +171,7 @@ def main():
     if not args.no_wandb:
         try:
             import wandb
+
             wandb.init(
                 project="argus-slm-gauntlet",
                 name=f"bge-threshold-sweep-{len(attack_vectors)}phrases",
@@ -177,19 +187,23 @@ def main():
 
             # Log sweep as a table
             for r in results:
-                wandb.log({
-                    "threshold": r["threshold"],
-                    "f1": r["f1"],
-                    "precision": r["precision"],
-                    "recall": r["recall"],
-                    "fpr": r["fpr"],
-                })
+                wandb.log(
+                    {
+                        "threshold": r["threshold"],
+                        "f1": r["f1"],
+                        "precision": r["precision"],
+                        "recall": r["recall"],
+                        "fpr": r["fpr"],
+                    }
+                )
 
-            wandb.log({
-                "best_threshold": best_threshold,
-                "best_f1": best_result["f1"],
-                "best_fpr": best_result["fpr"],
-            })
+            wandb.log(
+                {
+                    "best_threshold": best_threshold,
+                    "best_f1": best_result["f1"],
+                    "best_fpr": best_result["fpr"],
+                }
+            )
 
             wandb.finish()
             print("WandB logging complete")

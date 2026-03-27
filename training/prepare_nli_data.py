@@ -68,33 +68,41 @@ def convert_to_nli(records: list[dict], rng: random.Random) -> list[dict]:
         if label == 1:  # injection
             # Correct: injection hypothesis → entailment
             hyp_correct = rng.choice(INJECTION_HYPOTHESES)
-            nli_pairs.append({
-                "premise": text,
-                "hypothesis": hyp_correct,
-                "label": 0,  # entailment
-            })
+            nli_pairs.append(
+                {
+                    "premise": text,
+                    "hypothesis": hyp_correct,
+                    "label": 0,  # entailment
+                }
+            )
             # Incorrect: benign hypothesis → not_entailment
             hyp_wrong = rng.choice(BENIGN_HYPOTHESES)
-            nli_pairs.append({
-                "premise": text,
-                "hypothesis": hyp_wrong,
-                "label": 1,  # not_entailment
-            })
+            nli_pairs.append(
+                {
+                    "premise": text,
+                    "hypothesis": hyp_wrong,
+                    "label": 1,  # not_entailment
+                }
+            )
         else:  # benign
             # Correct: benign hypothesis → entailment
             hyp_correct = rng.choice(BENIGN_HYPOTHESES)
-            nli_pairs.append({
-                "premise": text,
-                "hypothesis": hyp_correct,
-                "label": 0,  # entailment
-            })
+            nli_pairs.append(
+                {
+                    "premise": text,
+                    "hypothesis": hyp_correct,
+                    "label": 0,  # entailment
+                }
+            )
             # Incorrect: injection hypothesis → not_entailment
             hyp_wrong = rng.choice(INJECTION_HYPOTHESES)
-            nli_pairs.append({
-                "premise": text,
-                "hypothesis": hyp_wrong,
-                "label": 1,  # not_entailment
-            })
+            nli_pairs.append(
+                {
+                    "premise": text,
+                    "hypothesis": hyp_wrong,
+                    "label": 1,  # not_entailment
+                }
+            )
 
     return nli_pairs
 
@@ -111,11 +119,13 @@ def load_mnli_samples(n: int, rng: random.Random) -> list[dict]:
 
     all_samples = []
     for row in ds:
-        all_samples.append({
-            "premise": row["premise"],
-            "hypothesis": row["hypothesis"],
-            "label": label_map[row["label"]],
-        })
+        all_samples.append(
+            {
+                "premise": row["premise"],
+                "hypothesis": row["hypothesis"],
+                "label": label_map[row["label"]],
+            }
+        )
 
     rng2 = random.Random(RANDOM_SEED + 100)
     rng2.shuffle(all_samples)

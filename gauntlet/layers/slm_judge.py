@@ -21,8 +21,11 @@ logger = logging.getLogger(__name__)
 
 # Default checkpoint from Phase 2 training
 _DEFAULT_MODEL_PATH = (
-    Path(__file__).parent.parent.parent / "training" / "checkpoints"
-    / "deberta-v3-small-injection" / "best"
+    Path(__file__).parent.parent.parent
+    / "training"
+    / "checkpoints"
+    / "deberta-v3-small-injection"
+    / "best"
 )
 
 # Same categories as llm_judge.py for consistency
@@ -42,40 +45,89 @@ ATTACK_CATEGORIES = [
 # (the binary classifier only outputs inject/benign, not attack type)
 _CATEGORY_KEYWORDS = {
     "instruction_override": [
-        "ignore", "disregard", "forget", "override", "previous instructions",
-        "new instructions", "system prompt", "null and void",
+        "ignore",
+        "disregard",
+        "forget",
+        "override",
+        "previous instructions",
+        "new instructions",
+        "system prompt",
+        "null and void",
     ],
     "jailbreak": [
-        "DAN", "do anything now", "developer mode", "jailbreak", "STAN",
-        "unrestricted", "no restrictions", "no limits",
+        "DAN",
+        "do anything now",
+        "developer mode",
+        "jailbreak",
+        "STAN",
+        "unrestricted",
+        "no restrictions",
+        "no limits",
     ],
     "delimiter_injection": [
-        "```", "<|", "|>", "###", "---", "<system>", "</system>",
-        "<instruction>", "BEGININSTRUCTION",
+        "```",
+        "<|",
+        "|>",
+        "###",
+        "---",
+        "<system>",
+        "</system>",
+        "<instruction>",
+        "BEGININSTRUCTION",
     ],
     "data_extraction": [
-        "reveal", "show me your", "what are your instructions",
-        "repeat your", "tell me your prompt", "secret", "password",
+        "reveal",
+        "show me your",
+        "what are your instructions",
+        "repeat your",
+        "tell me your prompt",
+        "secret",
+        "password",
     ],
     "indirect_injection": [
-        "when you see this", "if you read this", "hidden instruction",
-        "embedded", "in the document",
+        "when you see this",
+        "if you read this",
+        "hidden instruction",
+        "embedded",
+        "in the document",
     ],
     "context_manipulation": [
-        "actually", "in reality", "the real instruction", "correction",
-        "update:", "amendment", "the above is fake",
+        "actually",
+        "in reality",
+        "the real instruction",
+        "correction",
+        "update:",
+        "amendment",
+        "the above is fake",
     ],
     "obfuscation": [
-        "base64", "rot13", "hex", "encode", "decode", "\\x",
-        "unicode", "leetspeak",
+        "base64",
+        "rot13",
+        "hex",
+        "encode",
+        "decode",
+        "\\x",
+        "unicode",
+        "leetspeak",
     ],
     "hypothetical_framing": [
-        "hypothetically", "imagine", "roleplay", "pretend", "fiction",
-        "for educational purposes", "what if", "in a story",
+        "hypothetically",
+        "imagine",
+        "roleplay",
+        "pretend",
+        "fiction",
+        "for educational purposes",
+        "what if",
+        "in a story",
     ],
     "multilingual_injection": [
-        "traduire", "übersetze", "traduce", "переведи",
-        "ignorez", "vergessen", "ignora",
+        "traduire",
+        "übersetze",
+        "traduce",
+        "переведи",
+        "ignorez",
+        "vergessen",
+        "ignora",
     ],
 }
 
@@ -205,7 +257,7 @@ class SLMDetector:
                 )
 
             if len(text) > self.max_input_length:
-                text = text[:self.max_input_length]
+                text = text[: self.max_input_length]
 
             # Load model if needed
             self._ensure_loaded()
@@ -261,7 +313,9 @@ class SLMDetector:
             latency_ms = (time.perf_counter() - start_time) * 1000
             logger.warning(
                 "SLM layer failed open after %.1fms: %s: %s",
-                latency_ms, type(e).__name__, e,
+                latency_ms,
+                type(e).__name__,
+                e,
             )
             logger.debug("SLM inference traceback:", exc_info=True)
             return self._safe_result(latency_ms, f"{type(e).__name__}: {e}")

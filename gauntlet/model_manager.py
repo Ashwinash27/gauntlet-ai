@@ -48,9 +48,7 @@ def get_model_path(model_name: str) -> Path:
         ValueError: If model_name is not recognized.
     """
     if model_name not in MODELS:
-        raise ValueError(
-            f"Unknown model: {model_name}. Available: {', '.join(MODELS.keys())}"
-        )
+        raise ValueError(f"Unknown model: {model_name}. Available: {', '.join(MODELS.keys())}")
     return _MODELS_DIR / model_name
 
 
@@ -84,9 +82,7 @@ def ensure_model(model_name: str) -> Path:
         ImportError: If huggingface_hub is not installed.
     """
     if model_name not in MODELS:
-        raise ValueError(
-            f"Unknown model: {model_name}. Available: {', '.join(MODELS.keys())}"
-        )
+        raise ValueError(f"Unknown model: {model_name}. Available: {', '.join(MODELS.keys())}")
 
     model_path = get_model_path(model_name)
     if is_model_cached(model_name):
@@ -97,8 +93,7 @@ def ensure_model(model_name: str) -> Path:
         from huggingface_hub import hf_hub_download
     except ImportError:
         raise ImportError(
-            "Model download requires huggingface-hub. "
-            "Install with: pip install gauntlet-ai[slm]"
+            "Model download requires huggingface-hub. " "Install with: pip install gauntlet-ai[slm]"
         )
 
     model_info = MODELS[model_name]

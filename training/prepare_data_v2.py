@@ -116,8 +116,8 @@ def main():
     n_val = int(n * 0.1)
 
     hn_train = deduped_hard_neg[:n_train]
-    hn_val = deduped_hard_neg[n_train:n_train + n_val]
-    hn_test = deduped_hard_neg[n_train + n_val:]
+    hn_val = deduped_hard_neg[n_train : n_train + n_val]
+    hn_test = deduped_hard_neg[n_train + n_val :]
 
     # Separate original by split
     orig_train = [s for s in original if s["_orig_split"] == "train"]
@@ -169,8 +169,11 @@ def main():
     all_v2 = train_v2 + val_v2 + test_v2
     total_benign = sum(1 for s in all_v2 if s["label"] == 0)
     total_inject = sum(1 for s in all_v2 if s["label"] == 1)
-    total_new = sum(1 for s in all_v2 if s["source"] in
-                    ("wildjailbreak_adv_benign", "orbench_hard", "xstest_v2_safe"))
+    total_new = sum(
+        1
+        for s in all_v2
+        if s["source"] in ("wildjailbreak_adv_benign", "orbench_hard", "xstest_v2_safe")
+    )
 
     print(f"\n  TOTAL: {len(all_v2)} samples")
     print(f"    Benign: {total_benign}, Injection: {total_inject}")

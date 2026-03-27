@@ -37,11 +37,24 @@ STATS_PATH = TRAINING_DIR / "holdout_stats.json"
 # ---------------------------------------------------------------------------
 
 _INJECTION_LABELS = {
-    "1", "injection", "unsafe", "malicious", "attack", "jailbreak",
-    "prompt_injection", "prompt-injection", "true",
+    "1",
+    "injection",
+    "unsafe",
+    "malicious",
+    "attack",
+    "jailbreak",
+    "prompt_injection",
+    "prompt-injection",
+    "true",
 }
 _BENIGN_LABELS = {
-    "0", "benign", "safe", "legitimate", "legit", "normal", "false",
+    "0",
+    "benign",
+    "safe",
+    "legitimate",
+    "legit",
+    "normal",
+    "false",
 }
 
 
@@ -97,7 +110,7 @@ PINT_MISLABELED_INJECTIONS = {
 # but are standard LLM usage patterns. Relabel to benign.
 PINT_BORDERLINE_ROLEPLAY = {
     "I want you to act as an interviewer.",  # prefix match
-    "I want you to act as a storyteller.",   # prefix match
+    "I want you to act as a storyteller.",  # prefix match
 }
 
 
@@ -127,16 +140,19 @@ def load_pint_cleaned() -> pd.DataFrame:
 
     print(f"  PINT holdout: {original_count} samples, relabeled {relabeled} mislabeled rows")
 
-    return pd.DataFrame({
-        "text": df["text"].astype(str).str.strip(),
-        "label": df["label"].astype(int),
-        "source": "pint_holdout",
-    })
+    return pd.DataFrame(
+        {
+            "text": df["text"].astype(str).str.strip(),
+            "label": df["label"].astype(int),
+            "source": "pint_holdout",
+        }
+    )
 
 
 # ---------------------------------------------------------------------------
 # External dataset loaders
 # ---------------------------------------------------------------------------
+
 
 def load_rogue_security() -> pd.DataFrame:
     """rogue-security/prompt-injections-benchmark — 5K prompts, jailbreak/benign.
@@ -166,11 +182,13 @@ def load_rogue_security() -> pd.DataFrame:
                 print(f"    WARNING: No text column found")
                 continue
 
-            result = pd.DataFrame({
-                "text": df[text_col].astype(str).str.strip(),
-                "label": df[label_col].apply(normalize_label) if label_col else 1,
-                "source": source_name,
-            })
+            result = pd.DataFrame(
+                {
+                    "text": df[text_col].astype(str).str.strip(),
+                    "label": df[label_col].apply(normalize_label) if label_col else 1,
+                    "source": source_name,
+                }
+            )
             return result
         except Exception as e:
             print(f"    FAILED: {e}")
@@ -208,11 +226,13 @@ def load_wambosec() -> pd.DataFrame:
         print(f"    WARNING: No text column found")
         return pd.DataFrame()
 
-    result = pd.DataFrame({
-        "text": df[text_col].astype(str).str.strip(),
-        "label": df[label_col].apply(normalize_label) if label_col else 1,
-        "source": "wambosec",
-    })
+    result = pd.DataFrame(
+        {
+            "text": df[text_col].astype(str).str.strip(),
+            "label": df[label_col].apply(normalize_label) if label_col else 1,
+            "source": "wambosec",
+        }
+    )
     return result
 
 
@@ -238,11 +258,13 @@ def load_lakera_mosscap() -> pd.DataFrame:
         return pd.DataFrame()
 
     # All Mosscap prompts are injection attempts (Gandalf attack game)
-    result = pd.DataFrame({
-        "text": df[text_col].astype(str).str.strip(),
-        "label": 1,
-        "source": "lakera_mosscap",
-    })
+    result = pd.DataFrame(
+        {
+            "text": df[text_col].astype(str).str.strip(),
+            "label": 1,
+            "source": "lakera_mosscap",
+        }
+    )
     return result
 
 
@@ -274,17 +296,20 @@ def load_lakera_gandalf() -> pd.DataFrame:
         # All Gandalf "ignore instructions" prompts are injection attempts
         labels = 1
 
-    result = pd.DataFrame({
-        "text": df[text_col].astype(str).str.strip(),
-        "label": labels,
-        "source": "lakera_gandalf",
-    })
+    result = pd.DataFrame(
+        {
+            "text": df[text_col].astype(str).str.strip(),
+            "label": labels,
+            "source": "lakera_gandalf",
+        }
+    )
     return result
 
 
 # ---------------------------------------------------------------------------
 # Dedup + balancing
 # ---------------------------------------------------------------------------
+
 
 def dedup_exact(df: pd.DataFrame) -> tuple[pd.DataFrame, int]:
     """Remove exact text duplicates, keeping first occurrence."""
@@ -348,6 +373,7 @@ def balance_holdout(
 # Contamination check vs training data
 # ---------------------------------------------------------------------------
 
+
 def check_training_contamination(
     holdout_df: pd.DataFrame,
     training_dir: Path,
@@ -384,6 +410,7 @@ def check_training_contamination(
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
+
 
 def main() -> None:
     print("=" * 60)

@@ -26,7 +26,6 @@ from sklearn.metrics import (
 )
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
-
 PROJECT_ROOT = Path(__file__).parent.parent
 HF_CACHE = PROJECT_ROOT / ".hf_cache"
 
@@ -35,8 +34,10 @@ HF_CACHE = PROJECT_ROOT / ".hf_cache"
 # Dataset loaders (same as benchmark_gauntlet.py)
 # ---------------------------------------------------------------------------
 
+
 def load_notinject() -> tuple[list[str], np.ndarray, str]:
     from datasets import load_dataset
+
     ds = load_dataset("leolee99/NotInject")
     texts, labels = [], []
     for split_name in ["NotInject_one", "NotInject_two", "NotInject_three"]:
@@ -49,6 +50,7 @@ def load_notinject() -> tuple[list[str], np.ndarray, str]:
 
 def load_protectai_validation() -> tuple[list[str], np.ndarray, str]:
     from datasets import load_dataset
+
     ds = load_dataset("protectai/prompt-injection-validation")
     texts, labels = [], []
     for split_name in ds:
@@ -61,6 +63,7 @@ def load_protectai_validation() -> tuple[list[str], np.ndarray, str]:
 # ---------------------------------------------------------------------------
 # Model runners
 # ---------------------------------------------------------------------------
+
 
 class CompetitorModel:
     def __init__(self, name: str, model_id: str, injection_label_id: int, max_length: int = 512):
@@ -76,9 +79,7 @@ class CompetitorModel:
         print(f"  Loading {self.name} from {self.model_id}...")
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-        self.tokenizer = AutoTokenizer.from_pretrained(
-            self.model_id, cache_dir=str(HF_CACHE)
-        )
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_id, cache_dir=str(HF_CACHE))
         self.model = AutoModelForSequenceClassification.from_pretrained(
             self.model_id, cache_dir=str(HF_CACHE)
         )
@@ -123,8 +124,9 @@ def evaluate_model(
     n_inject = int((labels == 1).sum())
     n_benign = int((labels == 0).sum())
 
-    print(f"\n  [{model.name}] on [{dataset_name}] — {n} samples "
-          f"({n_inject} inj, {n_benign} ben)")
+    print(
+        f"\n  [{model.name}] on [{dataset_name}] — {n} samples " f"({n_inject} inj, {n_benign} ben)"
+    )
 
     predictions = np.zeros(n, dtype=np.int32)
     confidences = np.zeros(n, dtype=np.float64)
@@ -174,13 +176,20 @@ def evaluate_model(
     result = {
         "model": model.name,
         "dataset": dataset_name,
-        "total": n, "injection": n_inject, "benign": n_benign,
-        "tp": int(tp), "fp": int(fp), "fn": int(fn), "tn": int(tn),
+        "total": n,
+        "injection": n_inject,
+        "benign": n_benign,
+        "tp": int(tp),
+        "fp": int(fp),
+        "fn": int(fn),
+        "tn": int(tn),
         "f1": round(f1, 5),
         "precision": round(precision, 5),
         "recall": round(recall, 5),
         "fpr": round(fpr, 5),
-        "over_defense_accuracy": round(over_defense_acc, 5) if over_defense_acc is not None else None,
+        "over_defense_accuracy": (
+            round(over_defense_acc, 5) if over_defense_acc is not None else None
+        ),
         "latency_mean_ms": round(float(lat_arr.mean()), 2),
         "eval_seconds": round(total_time, 1),
     }
@@ -196,9 +205,13 @@ def evaluate_model(
 
 def main():
     parser = argparse.ArgumentParser(description="Benchmark competitor models")
-    parser.add_argument("--model", type=str, default=None,
-                        choices=["protectai", "promptguard", "deepset"],
-                        help="Run single model only")
+    parser.add_argument(
+        "--model",
+        type=str,
+        default=None,
+        choices=["protectai", "promptguard", "deepset"],
+        help="Run single model only",
+    )
     args = parser.parse_args()
 
     print("=" * 70)
@@ -235,8 +248,10 @@ def main():
     # Load datasets once
     print("\n[1] Loading datasets...")
     datasets = {}
-    for loader_name, loader_fn in [("NotInject", load_notinject),
-                                     ("ProtectAI-Validation", load_protectai_validation)]:
+    for loader_name, loader_fn in [
+        ("NotInject", load_notinject),
+        ("ProtectAI-Validation", load_protectai_validation),
+    ]:
         try:
             texts, labels, name = loader_fn()
             datasets[name] = (texts, labels)
@@ -258,6 +273,7 @@ def main():
         except Exception as e:
             print(f"  ERROR loading model {model.name}: {e}")
             import traceback
+
             traceback.print_exc()
             continue
 
@@ -268,6 +284,7 @@ def main():
             except Exception as e:
                 print(f"  ERROR evaluating {model.name} on {ds_name}: {e}")
                 import traceback
+
                 traceback.print_exc()
 
         # Free GPU memory before loading next model
@@ -282,22 +299,26 @@ def main():
         with open(gauntlet_results_path) as f:
             data = json.load(f)
             for r in data.get("results", []):
-                gauntlet_results.append({
-                    "model": "Gauntlet-v0.3.0",
-                    "dataset": r["dataset"],
-                    "f1": r["f1"],
-                    "precision": r["precision"],
-                    "recall": r["recall"],
-                    "fpr": r["fpr"],
-                    "over_defense_accuracy": r.get("over_defense_accuracy"),
-                })
+                gauntlet_results.append(
+                    {
+                        "model": "Gauntlet-v0.3.0",
+                        "dataset": r["dataset"],
+                        "f1": r["f1"],
+                        "precision": r["precision"],
+                        "recall": r["recall"],
+                        "fpr": r["fpr"],
+                        "over_defense_accuracy": r.get("over_defense_accuracy"),
+                    }
+                )
 
     # Comparison table
     print(f"\n{'=' * 90}")
     print("COMPARISON TABLE")
     print(f"{'=' * 90}")
-    print(f"  {'Model':>25} {'Dataset':>25} {'F1':>8} {'Prec':>8} "
-          f"{'Recall':>8} {'FPR':>8} {'OD-Acc':>8}")
+    print(
+        f"  {'Model':>25} {'Dataset':>25} {'F1':>8} {'Prec':>8} "
+        f"{'Recall':>8} {'FPR':>8} {'OD-Acc':>8}"
+    )
     print(f"  {'-' * 85}")
 
     combined = gauntlet_results + all_results
@@ -305,9 +326,15 @@ def main():
     combined.sort(key=lambda r: (r["dataset"], r["model"]))
 
     for r in combined:
-        od = f"{r['over_defense_accuracy']:.4f}" if r.get('over_defense_accuracy') is not None else "N/A"
-        print(f"  {r['model']:>25} {r['dataset']:>25} {r['f1']:>8.4f} "
-              f"{r['precision']:>8.4f} {r['recall']:>8.4f} {r['fpr']:>8.4f} {od:>8}")
+        od = (
+            f"{r['over_defense_accuracy']:.4f}"
+            if r.get("over_defense_accuracy") is not None
+            else "N/A"
+        )
+        print(
+            f"  {r['model']:>25} {r['dataset']:>25} {r['f1']:>8.4f} "
+            f"{r['precision']:>8.4f} {r['recall']:>8.4f} {r['fpr']:>8.4f} {od:>8}"
+        )
 
     print(f"{'=' * 90}")
 

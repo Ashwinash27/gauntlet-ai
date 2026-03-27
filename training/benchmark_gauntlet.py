@@ -38,6 +38,7 @@ L3_THRESHOLD = 0.49
 # Dataset loaders
 # ---------------------------------------------------------------------------
 
+
 def load_notinject() -> tuple[list[str], np.ndarray, str]:
     """Load NotInject dataset (339 benign samples with trigger words)."""
     from datasets import load_dataset
@@ -110,11 +111,14 @@ DATASET_LOADERS = {
 # Evaluation
 # ---------------------------------------------------------------------------
 
+
 def evaluate_dataset(
     texts: list[str],
     labels: np.ndarray,
     dataset_name: str,
-    l1, l2, l3,
+    l1,
+    l2,
+    l3,
 ) -> dict:
     """Run Gauntlet cascade on a dataset and compute metrics."""
 
@@ -200,12 +204,17 @@ def evaluate_dataset(
         "total": n,
         "injection": n_inject,
         "benign": n_benign,
-        "tp": int(tp), "fp": int(fp), "fn": int(fn), "tn": int(tn),
+        "tp": int(tp),
+        "fp": int(fp),
+        "fn": int(fn),
+        "tn": int(tn),
         "f1": round(f1, 5),
         "precision": round(precision, 5),
         "recall": round(recall, 5),
         "fpr": round(fpr, 5),
-        "over_defense_accuracy": round(over_defense_acc, 5) if over_defense_acc is not None else None,
+        "over_defense_accuracy": (
+            round(over_defense_acc, 5) if over_defense_acc is not None else None
+        ),
         "layer_detections": {"l1": l1_det, "l2": l2_det, "l3": l3_det},
         "latency": {
             "mean_ms": round(float(warm_lat.mean()), 2),
@@ -218,8 +227,10 @@ def evaluate_dataset(
     # Print
     print(f"    F1={f1:.4f}  Prec={precision:.4f}  Recall={recall:.4f}  FPR={fpr:.4f}")
     if over_defense_acc is not None:
-        print(f"    Over-defense accuracy: {over_defense_acc:.4f} "
-              f"({tn}/{n_benign} benign correct)")
+        print(
+            f"    Over-defense accuracy: {over_defense_acc:.4f} "
+            f"({tn}/{n_benign} benign correct)"
+        )
     print(f"    TP={tp} FP={fp} FN={fn} TN={tn}")
     print(f"    Layers: L1={l1_det} L2={l2_det} L3={l3_det}")
     print(f"    Latency: mean={warm_lat.mean():.1f}ms  median={np.median(warm_lat):.1f}ms")
@@ -231,9 +242,13 @@ def evaluate_dataset(
 def main():
     parser = argparse.ArgumentParser(description="Benchmark Gauntlet on public datasets")
     parser.add_argument("--no_wandb", action="store_true")
-    parser.add_argument("--dataset", type=str, default=None,
-                        choices=list(DATASET_LOADERS.keys()),
-                        help="Run single dataset only")
+    parser.add_argument(
+        "--dataset",
+        type=str,
+        default=None,
+        choices=list(DATASET_LOADERS.keys()),
+        help="Run single dataset only",
+    )
     args = parser.parse_args()
 
     print("=" * 70)
@@ -275,19 +290,26 @@ def main():
         except Exception as e:
             print(f"  ERROR loading {ds_key}: {e}")
             import traceback
+
             traceback.print_exc()
 
     # Summary table
     print(f"\n{'=' * 70}")
     print("GAUNTLET v0.3.0 BENCHMARK RESULTS")
     print(f"{'=' * 70}")
-    print(f"  {'Dataset':>25} {'N':>6} {'F1':>8} {'Prec':>8} {'Recall':>8} "
-          f"{'FPR':>8} {'OD-Acc':>8}")
+    print(
+        f"  {'Dataset':>25} {'N':>6} {'F1':>8} {'Prec':>8} {'Recall':>8} "
+        f"{'FPR':>8} {'OD-Acc':>8}"
+    )
     print(f"  {'-' * 75}")
     for r in all_results:
-        od = f"{r['over_defense_accuracy']:.4f}" if r['over_defense_accuracy'] is not None else "N/A"
-        print(f"  {r['dataset']:>25} {r['total']:>6} {r['f1']:>8.4f} "
-              f"{r['precision']:>8.4f} {r['recall']:>8.4f} {r['fpr']:>8.4f} {od:>8}")
+        od = (
+            f"{r['over_defense_accuracy']:.4f}" if r["over_defense_accuracy"] is not None else "N/A"
+        )
+        print(
+            f"  {r['dataset']:>25} {r['total']:>6} {r['f1']:>8.4f} "
+            f"{r['precision']:>8.4f} {r['recall']:>8.4f} {r['fpr']:>8.4f} {od:>8}"
+        )
     print(f"{'=' * 70}")
 
     # Save results
@@ -305,6 +327,7 @@ def main():
     if not args.no_wandb:
         try:
             import wandb
+
             wandb.init(
                 project="argus-slm-gauntlet",
                 name="benchmark-public-datasets",
@@ -312,12 +335,14 @@ def main():
             )
             for r in all_results:
                 prefix = r["dataset"].lower().replace("-", "_")
-                wandb.log({
-                    f"{prefix}_f1": r["f1"],
-                    f"{prefix}_precision": r["precision"],
-                    f"{prefix}_recall": r["recall"],
-                    f"{prefix}_fpr": r["fpr"],
-                })
+                wandb.log(
+                    {
+                        f"{prefix}_f1": r["f1"],
+                        f"{prefix}_precision": r["precision"],
+                        f"{prefix}_recall": r["recall"],
+                        f"{prefix}_fpr": r["fpr"],
+                    }
+                )
             wandb.finish()
             print("WandB logging complete")
         except Exception as e:

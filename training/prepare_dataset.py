@@ -40,11 +40,24 @@ SOURCE_PRIORITY = {
 # ---------------------------------------------------------------------------
 
 _INJECTION_LABELS = {
-    "1", "injection", "unsafe", "malicious", "attack", "jailbreak",
-    "prompt_injection", "prompt-injection", "true",
+    "1",
+    "injection",
+    "unsafe",
+    "malicious",
+    "attack",
+    "jailbreak",
+    "prompt_injection",
+    "prompt-injection",
+    "true",
 }
 _BENIGN_LABELS = {
-    "0", "benign", "safe", "legitimate", "legit", "normal", "false",
+    "0",
+    "benign",
+    "safe",
+    "legitimate",
+    "legit",
+    "normal",
+    "false",
 }
 
 
@@ -68,6 +81,7 @@ def normalize_label(value) -> int:
 # ---------------------------------------------------------------------------
 # Dataset loaders
 # ---------------------------------------------------------------------------
+
 
 def _find_text_col(df: pd.DataFrame, candidates: list[str]) -> str | None:
     for col in candidates:
@@ -93,12 +107,14 @@ def load_pint_train() -> pd.DataFrame:
         return pd.DataFrame()
 
     df = pd.read_csv(path)
-    return pd.DataFrame({
-        "text": df["text"].astype(str),
-        "label": df["label"].apply(normalize_label),
-        "source": "pint",
-        "attack_category": None,
-    })
+    return pd.DataFrame(
+        {
+            "text": df["text"].astype(str),
+            "label": df["label"].apply(normalize_label),
+            "source": "pint",
+            "attack_category": None,
+        }
+    )
 
 
 def load_neuralchemy() -> pd.DataFrame:
@@ -118,12 +134,14 @@ def load_neuralchemy() -> pd.DataFrame:
         print(f"  WARNING: No text column in neuralchemy. Columns: {list(df.columns)}")
         return pd.DataFrame()
 
-    result = pd.DataFrame({
-        "text": df[text_col].astype(str),
-        "label": df[label_col].apply(normalize_label) if label_col else 1,
-        "source": "neuralchemy",
-        "attack_category": df[cat_col].astype(str) if cat_col else None,
-    })
+    result = pd.DataFrame(
+        {
+            "text": df[text_col].astype(str),
+            "label": df[label_col].apply(normalize_label) if label_col else 1,
+            "source": "neuralchemy",
+            "attack_category": df[cat_col].astype(str) if cat_col else None,
+        }
+    )
     return result
 
 
@@ -142,12 +160,14 @@ def load_safeguard() -> pd.DataFrame:
         print(f"  WARNING: No text column in safeguard. Columns: {list(df.columns)}")
         return pd.DataFrame()
 
-    return pd.DataFrame({
-        "text": df[text_col].astype(str),
-        "label": df[label_col].apply(normalize_label) if label_col else 1,
-        "source": "safeguard",
-        "attack_category": None,
-    })
+    return pd.DataFrame(
+        {
+            "text": df[text_col].astype(str),
+            "label": df[label_col].apply(normalize_label) if label_col else 1,
+            "source": "safeguard",
+            "attack_category": None,
+        }
+    )
 
 
 def load_slabs() -> pd.DataFrame:
@@ -165,12 +185,14 @@ def load_slabs() -> pd.DataFrame:
         print(f"  WARNING: No text column in slabs. Columns: {list(df.columns)}")
         return pd.DataFrame()
 
-    return pd.DataFrame({
-        "text": df[text_col].astype(str),
-        "label": df[label_col].apply(normalize_label) if label_col else 1,
-        "source": "slabs",
-        "attack_category": None,
-    })
+    return pd.DataFrame(
+        {
+            "text": df[text_col].astype(str),
+            "label": df[label_col].apply(normalize_label) if label_col else 1,
+            "source": "slabs",
+            "attack_category": None,
+        }
+    )
 
 
 def load_shieldlm() -> pd.DataFrame:
@@ -183,23 +205,28 @@ def load_shieldlm() -> pd.DataFrame:
     df = pd.read_parquet(path)
     text_col = _find_text_col(df, ["text", "prompt", "input", "content"])
     label_col = _find_label_col(df)
-    cat_col = _find_text_col(df, ["label_category", "attack_category", "category", "type", "attack_type"])
+    cat_col = _find_text_col(
+        df, ["label_category", "attack_category", "category", "type", "attack_type"]
+    )
 
     if text_col is None:
         print(f"  WARNING: No text column in shieldlm. Columns: {list(df.columns)}")
         return pd.DataFrame()
 
-    return pd.DataFrame({
-        "text": df[text_col].astype(str),
-        "label": df[label_col].apply(normalize_label) if label_col else 1,
-        "source": "shieldlm",
-        "attack_category": df[cat_col].astype(str) if cat_col else None,
-    })
+    return pd.DataFrame(
+        {
+            "text": df[text_col].astype(str),
+            "label": df[label_col].apply(normalize_label) if label_col else 1,
+            "source": "shieldlm",
+            "attack_category": df[cat_col].astype(str) if cat_col else None,
+        }
+    )
 
 
 # ---------------------------------------------------------------------------
 # Deduplication
 # ---------------------------------------------------------------------------
+
 
 def dedup_exact_source_aware(df: pd.DataFrame) -> tuple[pd.DataFrame, int]:
     """Exact-text dedup with source priority. Higher-priority sources kept."""
@@ -234,10 +261,12 @@ def _make_shingles(text: str, k: int = 3) -> list[str]:
     words = text.lower().split()
     if len(words) < k:
         return words  # Return individual words for short texts
-    return [" ".join(words[i:i + k]) for i in range(len(words) - k + 1)]
+    return [" ".join(words[i : i + k]) for i in range(len(words) - k + 1)]
 
 
-def dedup_minhash(df: pd.DataFrame, threshold: float = 0.8, num_perm: int = 128) -> tuple[pd.DataFrame, int]:
+def dedup_minhash(
+    df: pd.DataFrame, threshold: float = 0.8, num_perm: int = 128
+) -> tuple[pd.DataFrame, int]:
     """MinHash LSH fuzzy dedup. Texts < 3 words are always kept."""
     before = len(df)
     short_mask = df["text"].str.split().str.len() < 3
@@ -274,7 +303,9 @@ def dedup_minhash(df: pd.DataFrame, threshold: float = 0.8, num_perm: int = 128)
             continue
         # Keep the one with highest source priority (lowest number)
         all_in_cluster = [idx] + cluster_indices
-        priorities = [(i, SOURCE_PRIORITY.get(long_df.loc[i, "source"], 99)) for i in all_in_cluster]
+        priorities = [
+            (i, SOURCE_PRIORITY.get(long_df.loc[i, "source"], 99)) for i in all_in_cluster
+        ]
         priorities.sort(key=lambda x: x[1])
         keeper = priorities[0][0]
         for i, _ in priorities[1:]:
@@ -290,6 +321,7 @@ def dedup_minhash(df: pd.DataFrame, threshold: float = 0.8, num_perm: int = 128)
 # ---------------------------------------------------------------------------
 # Contamination audit
 # ---------------------------------------------------------------------------
+
 
 def contamination_audit(
     df: pd.DataFrame,
@@ -337,7 +369,9 @@ def contamination_audit(
 
     if stats["exact_removed"] > 0 or stats["fuzzy_removed"] > 0:
         stats["status"] = "CONTAMINATION_REMOVED"
-        print(f"  CONTAMINATION FOUND: {stats['exact_removed']} exact + {stats['fuzzy_removed']} fuzzy matches removed")
+        print(
+            f"  CONTAMINATION FOUND: {stats['exact_removed']} exact + {stats['fuzzy_removed']} fuzzy matches removed"
+        )
     else:
         print("  Contamination audit: CLEAN (0 overlap)")
 
@@ -347,6 +381,7 @@ def contamination_audit(
 # ---------------------------------------------------------------------------
 # Main pipeline
 # ---------------------------------------------------------------------------
+
 
 def main() -> None:
     SPLITS_DIR.mkdir(parents=True, exist_ok=True)
@@ -425,10 +460,16 @@ def main() -> None:
     print("\n[7/8] Splitting 80/10/10 (stratified by label)...")
     # Create stratification key from label (source may have too few members for stratification)
     train_df, temp_df = train_test_split(
-        merged, test_size=0.2, random_state=42, stratify=merged["label"],
+        merged,
+        test_size=0.2,
+        random_state=42,
+        stratify=merged["label"],
     )
     val_df, test_df = train_test_split(
-        temp_df, test_size=0.5, random_state=42, stratify=temp_df["label"],
+        temp_df,
+        test_size=0.5,
+        random_state=42,
+        stratify=temp_df["label"],
     )
     print(f"  Train: {len(train_df)}")
     print(f"  Val:   {len(val_df)}")

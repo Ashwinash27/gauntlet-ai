@@ -80,12 +80,14 @@ def download_wildjailbreak(existing_hashes: set[str]) -> list[dict]:
         if h in existing_hashes or h in seen:
             continue
         seen.add(h)
-        samples.append({
-            "text": text.strip(),
-            "label": 0,
-            "source": "wildjailbreak_adv_benign",
-            "attack_category": "none",
-        })
+        samples.append(
+            {
+                "text": text.strip(),
+                "label": 0,
+                "source": "wildjailbreak_adv_benign",
+                "attack_category": "none",
+            }
+        )
 
     print(f"  Total rows scanned: {count}")
     print(f"  After dedup: {len(samples)} unique adversarial benign samples")
@@ -118,12 +120,14 @@ def download_orbench(existing_hashes: set[str]) -> list[dict]:
         if h in existing_hashes or h in seen:
             continue
         seen.add(h)
-        samples.append({
-            "text": text.strip(),
-            "label": 0,
-            "source": "orbench_hard",
-            "attack_category": "none",
-        })
+        samples.append(
+            {
+                "text": text.strip(),
+                "label": 0,
+                "source": "orbench_hard",
+                "attack_category": "none",
+            }
+        )
 
     print(f"  After dedup: {len(samples)} unique samples")
     return samples
@@ -152,12 +156,14 @@ def download_xstest(existing_hashes: set[str]) -> list[dict]:
         if h in existing_hashes or h in seen:
             continue
         seen.add(h)
-        samples.append({
-            "text": text.strip(),
-            "label": 0,
-            "source": "xstest_v2_safe",
-            "attack_category": "none",
-        })
+        samples.append(
+            {
+                "text": text.strip(),
+                "label": 0,
+                "source": "xstest_v2_safe",
+                "attack_category": "none",
+            }
+        )
 
     print(f"  After dedup: {len(samples)} unique samples")
     return samples

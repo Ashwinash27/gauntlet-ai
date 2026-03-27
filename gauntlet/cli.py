@@ -47,9 +47,7 @@ def _get_app():
         layers: str = typer.Option(
             None, "--layers", "-l", help="Comma-separated layer numbers (e.g., 1,2)"
         ),
-        mode: str = typer.Option(
-            None, "--mode", "-m", help="Detection mode: 'cloud' or 'slm'"
-        ),
+        mode: str = typer.Option(None, "--mode", "-m", help="Detection mode: 'cloud' or 'slm'"),
         output_json: bool = typer.Option(False, "--json", "-j", help="Output as JSON"),
     ) -> None:
         """Detect prompt injection in text."""
@@ -157,9 +155,7 @@ def _get_app():
         directory: Path = typer.Argument(..., help="Directory to scan"),
         pattern: str = typer.Option("*.txt", "--pattern", "-p", help="File glob pattern"),
         all_layers: bool = typer.Option(False, "--all", "-a", help="Run all configured layers"),
-        mode: str = typer.Option(
-            None, "--mode", "-m", help="Detection mode: 'cloud' or 'slm'"
-        ),
+        mode: str = typer.Option(None, "--mode", "-m", help="Detection mode: 'cloud' or 'slm'"),
         output_json: bool = typer.Option(False, "--json", "-j", help="Output as JSON"),
     ) -> None:
         """Scan files in a directory for prompt injections."""

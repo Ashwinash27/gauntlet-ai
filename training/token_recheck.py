@@ -19,9 +19,7 @@ import torch
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 PROJECT_ROOT = Path(__file__).parent.parent
-DEFAULT_MODEL_PATH = (
-    Path(__file__).parent / "checkpoints" / "deberta-v3-base-injection-v2" / "best"
-)
+DEFAULT_MODEL_PATH = Path(__file__).parent / "checkpoints" / "deberta-v3-base-injection-v2" / "best"
 OUTPUT_PATH = Path(__file__).parent / "biased_tokens.json"
 
 
@@ -87,15 +85,19 @@ def main():
         for i, (tid, text, pred) in enumerate(zip(batch_ids, batch_texts, preds)):
             if pred == 1:  # Predicted as injection
                 conf = torch.softmax(logits[i], dim=-1)[1].item()
-                biased_tokens.append({
-                    "token_id": tid,
-                    "token_text": text,
-                    "confidence": round(conf, 4),
-                })
+                biased_tokens.append(
+                    {
+                        "token_id": tid,
+                        "token_text": text,
+                        "confidence": round(conf, 4),
+                    }
+                )
                 biased_ids.append(tid)
 
         if (end) % 10000 < args.batch_size:
-            print(f"  {end}/{vocab_size} ({end/vocab_size*100:.0f}%) — {len(biased_tokens)} biased so far")
+            print(
+                f"  {end}/{vocab_size} ({end/vocab_size*100:.0f}%) — {len(biased_tokens)} biased so far"
+            )
 
     # Sort by confidence
     biased_tokens.sort(key=lambda x: -x["confidence"])
@@ -116,7 +118,9 @@ def main():
     print("\n" + "=" * 60)
     print("RESULTS")
     print("=" * 60)
-    print(f"  Total biased tokens: {len(biased_tokens)} / {vocab_size} ({len(biased_tokens)/vocab_size*100:.1f}%)")
+    print(
+        f"  Total biased tokens: {len(biased_tokens)} / {vocab_size} ({len(biased_tokens)/vocab_size*100:.1f}%)"
+    )
     print(f"  Saved to: {OUTPUT_PATH}")
 
     print("\n  Top 30 biased tokens (highest confidence):")

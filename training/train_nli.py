@@ -152,10 +152,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--batch_size", type=int, default=16)
     parser.add_argument("--eval_batch_size", type=int, default=32)
     parser.add_argument("--grad_accum", type=int, default=1)
-    parser.add_argument("--epochs", type=int, default=2,
-                        help="2 epochs to prevent catastrophic forgetting")
-    parser.add_argument("--lr", type=float, default=3e-6,
-                        help="Lower LR to preserve NLI knowledge (10x lower than from-scratch)")
+    parser.add_argument(
+        "--epochs", type=int, default=2, help="2 epochs to prevent catastrophic forgetting"
+    )
+    parser.add_argument(
+        "--lr",
+        type=float,
+        default=3e-6,
+        help="Lower LR to preserve NLI knowledge (10x lower than from-scratch)",
+    )
     parser.add_argument("--warmup_ratio", type=float, default=0.1)
     parser.add_argument("--weight_decay", type=float, default=0.06)
     parser.add_argument("--no_wandb", action="store_true")
@@ -276,7 +281,9 @@ def main():
 
     # -- Train --
     print("\n[4/5] Starting training...")
-    print(f"  Batch size: {args.batch_size} (x{args.grad_accum} accum = {args.batch_size * args.grad_accum} effective)")
+    print(
+        f"  Batch size: {args.batch_size} (x{args.grad_accum} accum = {args.batch_size * args.grad_accum} effective)"
+    )
     print(f"  Learning rate: {args.lr}")
     print(f"  Epochs: {args.epochs}")
     print(f"  FP16: {args.fp16}")
@@ -302,12 +309,16 @@ def main():
 
     # Save the inference hypothesis alongside the model
     with open(best_dir / "nli_config.json", "w") as f:
-        json.dump({
-            "hypothesis": INFERENCE_HYPOTHESIS,
-            "label2id": LABEL2ID,
-            "id2label": ID2LABEL,
-            "entailment_label": 0,
-        }, f, indent=2)
+        json.dump(
+            {
+                "hypothesis": INFERENCE_HYPOTHESIS,
+                "label2id": LABEL2ID,
+                "id2label": ID2LABEL,
+                "entailment_label": 0,
+            },
+            f,
+            indent=2,
+        )
 
     print(f"\nBest model saved to: {best_dir}")
 
@@ -341,8 +352,7 @@ def main():
             "train_runtime": train_result.metrics.get("train_runtime"),
         },
         "eval_metrics": {
-            k: round(v, 6) if isinstance(v, float) else v
-            for k, v in eval_results.items()
+            k: round(v, 6) if isinstance(v, float) else v for k, v in eval_results.items()
         },
         "data": {
             "train_pairs": len(train_tokenized),
@@ -357,10 +367,12 @@ def main():
 
     # -- WandB --
     if not args.no_wandb and wandb.run is not None:
-        wandb.log({
-            "final/val_f1": eval_results.get("eval_f1", 0),
-            "final/val_accuracy": eval_results.get("eval_accuracy", 0),
-        })
+        wandb.log(
+            {
+                "final/val_f1": eval_results.get("eval_f1", 0),
+                "final/val_accuracy": eval_results.get("eval_accuracy", 0),
+            }
+        )
         wandb.finish()
 
     print("\nNext: Run benchmark with NLI model on NotInject + ProtectAI-Validation")

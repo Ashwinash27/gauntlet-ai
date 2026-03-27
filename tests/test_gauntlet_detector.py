@@ -585,10 +585,13 @@ class TestSLMMode:
         """SLM mode should ignore API keys in environment."""
         with (
             patch("gauntlet.detector.get_mode", return_value=None),
-            patch.dict(os.environ, {
-                "OPENAI_API_KEY": "sk-real-key",
-                "ANTHROPIC_API_KEY": "sk-ant-real-key",
-            }),
+            patch.dict(
+                os.environ,
+                {
+                    "OPENAI_API_KEY": "sk-real-key",
+                    "ANTHROPIC_API_KEY": "sk-ant-real-key",
+                },
+            ),
         ):
             g = Gauntlet(mode="slm")
         assert g._openai_key is None
@@ -638,16 +641,22 @@ class TestSLMMode:
         # Mock Layer 2 to pass
         mock_l2 = MagicMock()
         mock_l2.detect.return_value = LayerResult(
-            is_injection=False, confidence=0.0, attack_type=None,
-            layer=2, latency_ms=1.0,
+            is_injection=False,
+            confidence=0.0,
+            attack_type=None,
+            layer=2,
+            latency_ms=1.0,
         )
         g._embeddings = mock_l2
 
         # Mock Layer 3 to detect
         mock_l3 = MagicMock()
         mock_l3.detect.return_value = LayerResult(
-            is_injection=True, confidence=0.95, attack_type="jailbreak",
-            layer=3, latency_ms=50.0,
+            is_injection=True,
+            confidence=0.95,
+            attack_type="jailbreak",
+            layer=3,
+            latency_ms=50.0,
         )
         g._llm = mock_l3
 

@@ -23,18 +23,80 @@ BIASED_TOKENS_PATH = Path(__file__).parent / "biased_tokens.json"
 # Curated from the 10K+ biased tokens — focusing on words that are
 # genuinely common in normal English usage
 TOP_BIASED_WORDS = [
-    "rules", "forget", "delete", "enable", "ban", "quit", "proceed",
-    "cancel", "prompt", "execute", "remove", "switch", "activate",
-    "enforce", "restrict", "allow", "abandon", "halt", "cease",
-    "disable", "terminate", "bypass", "unlock", "disclose", "skip",
-    "dismiss", "obey", "suspend", "override", "ignore", "disregard",
-    "suppress", "load", "interrupt", "hide", "invoke", "accept",
-    "omit", "revoke", "authorize", "restrict", "forbidden", "exit",
-    "toggle", "mute", "purge", "emit", "evade", "compel", "defer",
-    "withhold", "translate", "decode", "encode", "convert", "extract",
-    "inject", "output", "input", "command", "instruction", "system",
-    "role", "assistant", "user", "previous", "above", "below",
-    "pretend", "imagine", "act", "behave", "respond", "reply",
+    "rules",
+    "forget",
+    "delete",
+    "enable",
+    "ban",
+    "quit",
+    "proceed",
+    "cancel",
+    "prompt",
+    "execute",
+    "remove",
+    "switch",
+    "activate",
+    "enforce",
+    "restrict",
+    "allow",
+    "abandon",
+    "halt",
+    "cease",
+    "disable",
+    "terminate",
+    "bypass",
+    "unlock",
+    "disclose",
+    "skip",
+    "dismiss",
+    "obey",
+    "suspend",
+    "override",
+    "ignore",
+    "disregard",
+    "suppress",
+    "load",
+    "interrupt",
+    "hide",
+    "invoke",
+    "accept",
+    "omit",
+    "revoke",
+    "authorize",
+    "restrict",
+    "forbidden",
+    "exit",
+    "toggle",
+    "mute",
+    "purge",
+    "emit",
+    "evade",
+    "compel",
+    "defer",
+    "withhold",
+    "translate",
+    "decode",
+    "encode",
+    "convert",
+    "extract",
+    "inject",
+    "output",
+    "input",
+    "command",
+    "instruction",
+    "system",
+    "role",
+    "assistant",
+    "user",
+    "previous",
+    "above",
+    "below",
+    "pretend",
+    "imagine",
+    "act",
+    "behave",
+    "respond",
+    "reply",
 ]
 
 # --- MOF Templates: benign sentences with {word} placeholders ---
@@ -153,10 +215,17 @@ ENCODING_TEMPLATES = [
 ]
 
 ENCODING_EXAMPLES = [
-    "SGVsbG8gV29ybGQ=", "48656c6c6f", "\\u0048\\u0065\\u006c",
-    "AQID", "aGVsbG8gZnJpZW5kIQ==", "0x48 0x65 0x6C",
-    "uryyb jbeyq", "%E4%BD%A0%E5%A5%BD", "\\xC3\\xA9",
-    "data:image/png;base64,iVBORw0K", "\\u4f60\\u597d",
+    "SGVsbG8gV29ybGQ=",
+    "48656c6c6f",
+    "\\u0048\\u0065\\u006c",
+    "AQID",
+    "aGVsbG8gZnJpZW5kIQ==",
+    "0x48 0x65 0x6C",
+    "uryyb jbeyq",
+    "%E4%BD%A0%E5%A5%BD",
+    "\\xC3\\xA9",
+    "data:image/png;base64,iVBORw0K",
+    "\\u4f60\\u597d",
 ]
 
 NOASCII_TEMPLATES = [
@@ -173,10 +242,18 @@ NOASCII_TEMPLATES = [
 ]
 
 NOASCII_EXAMPLES = [
-    "Привет, мир!", "ΝΟΤΕ: Fix later", "你好世界",
-    "café naïve résumé", "München Straße", "東京タワー",
-    "Москва Россия", "α β γ δ ε", "한국어 테스트",
-    "señor año piña", "日本語テスト", "Ελληνικά",
+    "Привет, мир!",
+    "ΝΟΤΕ: Fix later",
+    "你好世界",
+    "café naïve résumé",
+    "München Straße",
+    "東京タワー",
+    "Москва Россия",
+    "α β γ δ ε",
+    "한국어 테스트",
+    "señor año piña",
+    "日本語テスト",
+    "Ελληνικά",
 ]
 
 BENIGN_INSTRUCTION_TEMPLATES = [
@@ -239,12 +316,14 @@ def generate_mof_samples(n: int = 1000) -> list[dict]:
             w = random.sample(words, 3)
             text = template.format(w1=w[0], w2=w[1], w3=w[2])
 
-        samples.append({
-            "text": text,
-            "label": 0,
-            "source": "mof_synthetic",
-            "attack_category": "none",
-        })
+        samples.append(
+            {
+                "text": text,
+                "label": 0,
+                "source": "mof_synthetic",
+                "attack_category": "none",
+            }
+        )
 
     return samples
 
@@ -259,46 +338,54 @@ def generate_targeted_samples() -> list[dict]:
         template = random.choice(TRANSLATION_TEMPLATES)
         foreign = random.choice(FOREIGN_TEXTS)
         text = template.format(text=foreign)
-        samples.append({
-            "text": text,
-            "label": 0,
-            "source": "targeted_translation",
-            "attack_category": "none",
-        })
+        samples.append(
+            {
+                "text": text,
+                "label": 0,
+                "source": "targeted_translation",
+                "attack_category": "none",
+            }
+        )
 
     # Encoding questions (100)
     for _ in range(100):
         template = random.choice(ENCODING_TEMPLATES)
         code = random.choice(ENCODING_EXAMPLES)
         text = template.format(code=code)
-        samples.append({
-            "text": text,
-            "label": 0,
-            "source": "targeted_encoding",
-            "attack_category": "none",
-        })
+        samples.append(
+            {
+                "text": text,
+                "label": 0,
+                "source": "targeted_encoding",
+                "attack_category": "none",
+            }
+        )
 
     # Non-ASCII code (100)
     for _ in range(100):
         template = random.choice(NOASCII_TEMPLATES)
         example = random.choice(NOASCII_EXAMPLES)
         text = template.format(text=example)
-        samples.append({
-            "text": text,
-            "label": 0,
-            "source": "targeted_noascii",
-            "attack_category": "none",
-        })
+        samples.append(
+            {
+                "text": text,
+                "label": 0,
+                "source": "targeted_noascii",
+                "attack_category": "none",
+            }
+        )
 
     # Benign instruction-like text (100)
     # Use all 30 templates + generate variations
     for template in BENIGN_INSTRUCTION_TEMPLATES:
-        samples.append({
-            "text": template,
-            "label": 0,
-            "source": "targeted_instructions",
-            "attack_category": "none",
-        })
+        samples.append(
+            {
+                "text": template,
+                "label": 0,
+                "source": "targeted_instructions",
+                "attack_category": "none",
+            }
+        )
     # Fill to 100 with random repeats
     while len([s for s in samples if s["source"] == "targeted_instructions"]) < 100:
         text = random.choice(BENIGN_INSTRUCTION_TEMPLATES)
@@ -308,12 +395,14 @@ def generate_targeted_samples() -> list[dict]:
             f"Hey, {text.lower()}",
             f"I was wondering — {text.lower()}",
         ]
-        samples.append({
-            "text": random.choice(variations),
-            "label": 0,
-            "source": "targeted_instructions",
-            "attack_category": "none",
-        })
+        samples.append(
+            {
+                "text": random.choice(variations),
+                "label": 0,
+                "source": "targeted_instructions",
+                "attack_category": "none",
+            }
+        )
 
     return samples
 
@@ -354,6 +443,7 @@ def main():
 
     # Summary
     from collections import Counter
+
     sources = Counter(s["source"] for s in all_samples)
 
     print("\n" + "=" * 60)

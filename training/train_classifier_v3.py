@@ -95,8 +95,10 @@ def compute_class_weights(train_ds: Dataset) -> torch.Tensor:
     weights = num_samples / (num_classes * counts)
     weights = weights / weights.sum() * num_classes
 
-    print(f"Class distribution: benign={counts[0]} ({counts[0]/num_samples:.1%}), "
-          f"injection={counts[1]} ({counts[1]/num_samples:.1%})")
+    print(
+        f"Class distribution: benign={counts[0]} ({counts[0]/num_samples:.1%}), "
+        f"injection={counts[1]} ({counts[1]/num_samples:.1%})"
+    )
     print(f"Class weights: benign={weights[0]:.4f}, injection={weights[1]:.4f}")
 
     return torch.tensor(weights, dtype=torch.float32)
@@ -218,13 +220,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--batch_size", type=int, default=16)
     parser.add_argument("--eval_batch_size", type=int, default=32)
     parser.add_argument("--grad_accum", type=int, default=1)
-    parser.add_argument("--epochs", type=int, default=3,
-                        help="PIGuard used 3 epochs")
+    parser.add_argument("--epochs", type=int, default=3, help="PIGuard used 3 epochs")
     parser.add_argument("--lr", type=float, default=2e-5)
     parser.add_argument("--warmup_ratio", type=float, default=0.1)
     parser.add_argument("--weight_decay", type=float, default=0.01)
-    parser.add_argument("--gamma", type=float, default=2.0,
-                        help="Focal loss gamma (0=standard CE, 2.0=default)")
+    parser.add_argument(
+        "--gamma", type=float, default=2.0, help="Focal loss gamma (0=standard CE, 2.0=default)"
+    )
     parser.add_argument("--no_wandb", action="store_true")
     parser.add_argument("--fp16", action="store_true", default=True)
     parser.add_argument("--no_fp16", action="store_true")
@@ -349,7 +351,9 @@ def main():
 
     # -- Trainer --
     print("\n[5/5] Starting training...")
-    print(f"  Batch size: {args.batch_size} (x{args.grad_accum} accum = {args.batch_size * args.grad_accum} effective)")
+    print(
+        f"  Batch size: {args.batch_size} (x{args.grad_accum} accum = {args.batch_size * args.grad_accum} effective)"
+    )
     print(f"  Learning rate: {args.lr}")
     print(f"  Epochs: {args.epochs}")
     print(f"  FP16: {args.fp16}")
@@ -414,8 +418,7 @@ def main():
             "train_samples_per_second": train_result.metrics.get("train_samples_per_second"),
         },
         "eval_metrics": {
-            k: round(v, 6) if isinstance(v, float) else v
-            for k, v in eval_results.items()
+            k: round(v, 6) if isinstance(v, float) else v for k, v in eval_results.items()
         },
         "data": {
             "train_samples": len(train_tokenized),
@@ -451,12 +454,14 @@ def main():
 
     # -- Finish WandB --
     if not args.no_wandb and wandb.run is not None:
-        wandb.log({
-            "final/val_f1": val_f1,
-            "final/val_fpr": val_fpr,
-            "final/val_precision": eval_results.get("eval_precision", 0),
-            "final/val_recall": eval_results.get("eval_recall", 0),
-        })
+        wandb.log(
+            {
+                "final/val_f1": val_f1,
+                "final/val_fpr": val_fpr,
+                "final/val_precision": eval_results.get("eval_precision", 0),
+                "final/val_recall": eval_results.get("eval_recall", 0),
+            }
+        )
         wandb.finish()
 
     return 0

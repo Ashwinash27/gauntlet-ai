@@ -15,7 +15,6 @@ import torch
 from gauntlet.layers.slm_judge import SLMDetector
 from gauntlet.models import LayerResult
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -177,7 +176,12 @@ class TestSLMDetection:
         result = det.detect("test")
         assert "injection_probability" in result.details
         assert "benign_probability" in result.details
-        assert abs(result.details["injection_probability"] + result.details["benign_probability"] - 1.0) < 0.01
+        assert (
+            abs(
+                result.details["injection_probability"] + result.details["benign_probability"] - 1.0
+            )
+            < 0.01
+        )
 
 
 # ---------------------------------------------------------------------------

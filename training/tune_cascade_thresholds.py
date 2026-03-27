@@ -32,9 +32,7 @@ DATA_DIR = PROJECT_ROOT / "gauntlet" / "data"
 SPLITS_DIR = Path(__file__).parent / "splits"
 HF_CACHE = PROJECT_ROOT / ".hf_cache"
 BGE_LOCAL = HF_CACHE / "bge-small-en-v1.5-local"
-CHECKPOINT_DIR = (
-    Path(__file__).parent / "checkpoints" / "deberta-v3-small-injection" / "best"
-)
+CHECKPOINT_DIR = Path(__file__).parent / "checkpoints" / "deberta-v3-small-injection" / "best"
 
 ATTACK_VECTORS_PATH = DATA_DIR / "attack_vectors_bge.npy"
 BGE_MODEL = "BAAI/bge-small-en-v1.5"
@@ -74,8 +72,10 @@ def compute_l2_scores(texts: list[str]) -> np.ndarray:
 
     print(f"  Encoding {len(texts)} texts...")
     embeddings = model.encode(
-        texts, normalize_embeddings=True,
-        batch_size=64, show_progress_bar=True,
+        texts,
+        normalize_embeddings=True,
+        batch_size=64,
+        show_progress_bar=True,
     )
 
     print("  Computing cosine similarities...")
@@ -223,8 +223,10 @@ def print_summary(
     print("LAYER CONTRIBUTION ANALYSIS")
     print(f"{'=' * 70}")
     print(f"  Total samples: {n_total} ({n_inject} injection, {n_benign} benign)")
-    print(f"  L1 (rules):    catches {l1_caught}/{n_inject} injections "
-          f"({l1_caught/n_inject*100:.1f}%), {l1_fp} false positives")
+    print(
+        f"  L1 (rules):    catches {l1_caught}/{n_inject} injections "
+        f"({l1_caught/n_inject*100:.1f}%), {l1_fp} false positives"
+    )
 
     best = grid_results["best_config"]
     if best:
@@ -240,8 +242,10 @@ def print_summary(
 
         print(f"  L2 (BGE@{l2_t:.2f}): catches {l2_new} additional injections beyond L1")
         print(f"  L3 (DeBERTa@{l3_t:.2f}): catches {l3_new} additional injections beyond L1+L2")
-        print(f"  Total caught: {l1_caught + l2_new + l3_new}/{n_inject} "
-              f"({(l1_caught + l2_new + l3_new)/n_inject*100:.1f}%)")
+        print(
+            f"  Total caught: {l1_caught + l2_new + l3_new}/{n_inject} "
+            f"({(l1_caught + l2_new + l3_new)/n_inject*100:.1f}%)"
+        )
 
         print(f"\n{'=' * 70}")
         print("BEST CASCADE CONFIGURATION (FPR <= 1.5%)")
@@ -255,8 +259,10 @@ def print_summary(
 
     best_1pct = grid_results.get("best_config_recall_at_1pct_fpr")
     if best_1pct:
-        print(f"\n  Recall @ 1% FPR: {best_1pct['recall']:.5f} "
-              f"(L2={best_1pct['l2_threshold']}, L3={best_1pct['l3_threshold']})")
+        print(
+            f"\n  Recall @ 1% FPR: {best_1pct['recall']:.5f} "
+            f"(L2={best_1pct['l2_threshold']}, L3={best_1pct['l3_threshold']})"
+        )
 
     print(f"{'=' * 70}")
 
@@ -264,8 +270,9 @@ def print_summary(
 def main():
     parser = argparse.ArgumentParser(description="Cascade threshold tuning (L2 + L3)")
     parser.add_argument("--no_wandb", action="store_true", help="Skip WandB logging")
-    parser.add_argument("--l3_only", action="store_true",
-                        help="Skip L2 re-encoding (use cached BGE results)")
+    parser.add_argument(
+        "--l3_only", action="store_true", help="Skip L2 re-encoding (use cached BGE results)"
+    )
     args = parser.parse_args()
 
     print("=" * 70)
@@ -292,8 +299,10 @@ def main():
     l2_scores = compute_l2_scores(texts)
     l2_time = time.perf_counter() - t0
     print(f"  L2 scores computed in {l2_time:.1f}s")
-    print(f"  Score stats: mean={l2_scores.mean():.4f}, "
-          f"std={l2_scores.std():.4f}, min={l2_scores.min():.4f}, max={l2_scores.max():.4f}")
+    print(
+        f"  Score stats: mean={l2_scores.mean():.4f}, "
+        f"std={l2_scores.std():.4f}, min={l2_scores.min():.4f}, max={l2_scores.max():.4f}"
+    )
 
     # Step 3: L3 scores
     print("\n[4/5] Computing Layer 3 (DeBERTa) injection probabilities...")
@@ -301,8 +310,10 @@ def main():
     l3_scores = compute_l3_scores(texts)
     l3_time = time.perf_counter() - t0
     print(f"  L3 scores computed in {l3_time:.1f}s")
-    print(f"  Score stats: mean={l3_scores.mean():.4f}, "
-          f"std={l3_scores.std():.4f}, min={l3_scores.min():.4f}, max={l3_scores.max():.4f}")
+    print(
+        f"  Score stats: mean={l3_scores.mean():.4f}, "
+        f"std={l3_scores.std():.4f}, min={l3_scores.min():.4f}, max={l3_scores.max():.4f}"
+    )
 
     # Step 4: Grid sweep
     print("\n[5/5] Sweeping 2D threshold grid...")
@@ -383,14 +394,16 @@ def main():
 
             best = grid_results["best_config"]
             if best:
-                wandb.log({
-                    "best_l2_threshold": best["l2_threshold"],
-                    "best_l3_threshold": best["l3_threshold"],
-                    "best_f1": best["f1"],
-                    "best_precision": best["precision"],
-                    "best_recall": best["recall"],
-                    "best_fpr": best["fpr"],
-                })
+                wandb.log(
+                    {
+                        "best_l2_threshold": best["l2_threshold"],
+                        "best_l3_threshold": best["l3_threshold"],
+                        "best_f1": best["f1"],
+                        "best_precision": best["precision"],
+                        "best_recall": best["recall"],
+                        "best_fpr": best["fpr"],
+                    }
+                )
 
             # Log heatmap data: top configs by F1
             top_results = sorted(
@@ -400,8 +413,17 @@ def main():
             )[:50]
             table = wandb.Table(
                 columns=["l2_threshold", "l3_threshold", "f1", "precision", "recall", "fpr"],
-                data=[[r["l2_threshold"], r["l3_threshold"], r["f1"],
-                       r["precision"], r["recall"], r["fpr"]] for r in top_results],
+                data=[
+                    [
+                        r["l2_threshold"],
+                        r["l3_threshold"],
+                        r["f1"],
+                        r["precision"],
+                        r["recall"],
+                        r["fpr"],
+                    ]
+                    for r in top_results
+                ],
             )
             wandb.log({"top_configs": table})
             wandb.finish()

@@ -98,8 +98,10 @@ def compute_class_weights(train_ds: Dataset) -> torch.Tensor:
     # Normalize so weights sum to num_classes (keeps loss scale stable)
     weights = weights / weights.sum() * num_classes
 
-    print(f"Class distribution: benign={counts[0]} ({counts[0]/num_samples:.1%}), "
-          f"injection={counts[1]} ({counts[1]/num_samples:.1%})")
+    print(
+        f"Class distribution: benign={counts[0]} ({counts[0]/num_samples:.1%}), "
+        f"injection={counts[1]} ({counts[1]/num_samples:.1%})"
+    )
     print(f"Class weights: benign={weights[0]:.4f}, injection={weights[1]:.4f}")
 
     return torch.tensor(weights, dtype=torch.float32)
@@ -110,9 +112,7 @@ def compute_class_weights(train_ds: Dataset) -> torch.Tensor:
 # ---------------------------------------------------------------------------
 
 
-def tokenize_dataset(
-    dataset: Dataset, tokenizer: AutoTokenizer
-) -> Dataset:
+def tokenize_dataset(dataset: Dataset, tokenizer: AutoTokenizer) -> Dataset:
     """Tokenize text field and keep labels."""
 
     def tokenize_fn(batch):
@@ -192,9 +192,7 @@ class WeightedTrainer(Trainer):
         outputs = model(**forward_inputs)
         logits = outputs.logits
 
-        loss_fn = torch.nn.CrossEntropyLoss(
-            weight=self.class_weights.to(logits.device)
-        )
+        loss_fn = torch.nn.CrossEntropyLoss(weight=self.class_weights.to(logits.device))
         loss = loss_fn(logits, labels)
 
         return (loss, outputs) if return_outputs else loss
@@ -206,16 +204,22 @@ class WeightedTrainer(Trainer):
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Fine-tune DeBERTa-v3-small for injection detection")
+    parser = argparse.ArgumentParser(
+        description="Fine-tune DeBERTa-v3-small for injection detection"
+    )
     parser.add_argument("--batch_size", type=int, default=16, help="Per-device train batch size")
-    parser.add_argument("--eval_batch_size", type=int, default=32, help="Per-device eval batch size")
+    parser.add_argument(
+        "--eval_batch_size", type=int, default=32, help="Per-device eval batch size"
+    )
     parser.add_argument("--grad_accum", type=int, default=1, help="Gradient accumulation steps")
     parser.add_argument("--epochs", type=int, default=4, help="Number of training epochs")
     parser.add_argument("--lr", type=float, default=2e-5, help="Learning rate")
     parser.add_argument("--warmup_ratio", type=float, default=0.1, help="Warmup ratio")
     parser.add_argument("--weight_decay", type=float, default=0.01, help="Weight decay")
     parser.add_argument("--no_wandb", action="store_true", help="Disable WandB logging")
-    parser.add_argument("--fp16", action="store_true", default=True, help="Use FP16 mixed precision")
+    parser.add_argument(
+        "--fp16", action="store_true", default=True, help="Use FP16 mixed precision"
+    )
     parser.add_argument("--no_fp16", action="store_true", help="Disable FP16")
     parser.add_argument("--patience", type=int, default=2, help="Early stopping patience (epochs)")
     return parser.parse_args()
@@ -345,7 +349,9 @@ def main():
 
     # -- Trainer --
     print("\n[5/5] Starting training...")
-    print(f"  Batch size: {args.batch_size} (x{args.grad_accum} accum = {args.batch_size * args.grad_accum} effective)")
+    print(
+        f"  Batch size: {args.batch_size} (x{args.grad_accum} accum = {args.batch_size * args.grad_accum} effective)"
+    )
     print(f"  Learning rate: {args.lr}")
     print(f"  Epochs: {args.epochs}")
     print(f"  FP16: {args.fp16}")
@@ -406,8 +412,7 @@ def main():
             "train_samples_per_second": train_result.metrics.get("train_samples_per_second"),
         },
         "eval_metrics": {
-            k: round(v, 6) if isinstance(v, float) else v
-            for k, v in eval_results.items()
+            k: round(v, 6) if isinstance(v, float) else v for k, v in eval_results.items()
         },
         "data": {
             "train_samples": len(train_tokenized),
@@ -440,17 +445,21 @@ def main():
     else:
         print(f"  ⚠ Val FPR {val_fpr:.4f} > 1.5% — may need threshold tuning in Phase 8")
 
-    print(f"\n{'PASSED' if passed else 'NEEDS OPTIMIZATION'}: Phase 2 {'complete' if passed else 'may need Optuna tuning'}")
+    print(
+        f"\n{'PASSED' if passed else 'NEEDS OPTIMIZATION'}: Phase 2 {'complete' if passed else 'may need Optuna tuning'}"
+    )
 
     # -- Finish WandB --
     if not args.no_wandb and wandb.run is not None:
-        wandb.log({
-            "final/val_f1": val_f1,
-            "final/val_fpr": val_fpr,
-            "final/val_precision": eval_results.get("eval_precision", 0),
-            "final/val_recall": eval_results.get("eval_recall", 0),
-            "phase2_passed": passed,
-        })
+        wandb.log(
+            {
+                "final/val_f1": val_f1,
+                "final/val_fpr": val_fpr,
+                "final/val_precision": eval_results.get("eval_precision", 0),
+                "final/val_recall": eval_results.get("eval_recall", 0),
+                "phase2_passed": passed,
+            }
+        )
         wandb.finish()
 
     return 0 if passed else 1

@@ -109,12 +109,12 @@ def run_cascade_evaluation(texts: list[str], labels: np.ndarray, sources: list[s
             elapsed = time.perf_counter() - t_start
             rate = (i + 1) / elapsed
             eta = (n - i - 1) / rate
-            print(f"    {i+1}/{n} ({(i+1)/n*100:.0f}%) - "
-                  f"{rate:.1f} samples/s - ETA {eta:.0f}s")
+            print(f"    {i+1}/{n} ({(i+1)/n*100:.0f}%) - " f"{rate:.1f} samples/s - ETA {eta:.0f}s")
 
     total_time = time.perf_counter() - t_start
-    print(f"  Cascade complete: {n} samples in {total_time:.1f}s "
-          f"({n/total_time:.1f} samples/s)")
+    print(
+        f"  Cascade complete: {n} samples in {total_time:.1f}s " f"({n/total_time:.1f} samples/s)"
+    )
 
     # ---------------------------------------------------------------
     # Compute metrics
@@ -166,7 +166,10 @@ def run_cascade_evaluation(texts: list[str], labels: np.ndarray, sources: list[s
             "total": src_n,
             "injection": src_inject,
             "benign": src_benign,
-            "tp": src_tp, "fp": src_fp, "fn": src_fn, "tn": src_tn,
+            "tp": src_tp,
+            "fp": src_fp,
+            "fn": src_fn,
+            "tn": src_tn,
             "f1": round(src_f1, 5),
             "precision": round(src_prec, 5),
             "recall": round(src_recall, 5),
@@ -188,32 +191,43 @@ def run_cascade_evaluation(texts: list[str], labels: np.ndarray, sources: list[s
     fn_indices = np.where((predictions == 0) & (labels == 1))[0]
     fn_samples = []
     for idx in fn_indices[:20]:
-        fn_samples.append({
-            "index": int(idx),
-            "source": sources[idx],
-            "l3_confidence": round(float(confidences[idx]), 5),
-            "text_preview": texts[idx][:150] + "..." if len(texts[idx]) > 150 else texts[idx],
-        })
+        fn_samples.append(
+            {
+                "index": int(idx),
+                "source": sources[idx],
+                "l3_confidence": round(float(confidences[idx]), 5),
+                "text_preview": texts[idx][:150] + "..." if len(texts[idx]) > 150 else texts[idx],
+            }
+        )
 
     # False positive samples (wrongly flagged benign)
     fp_indices = np.where((predictions == 1) & (labels == 0))[0]
     fp_samples = []
     for idx in fp_indices[:20]:
-        fp_samples.append({
-            "index": int(idx),
-            "source": sources[idx],
-            "detected_by_layer": int(detected_by_layer[idx]),
-            "confidence": round(float(confidences[idx]), 5),
-            "text_preview": texts[idx][:150] + "..." if len(texts[idx]) > 150 else texts[idx],
-        })
+        fp_samples.append(
+            {
+                "index": int(idx),
+                "source": sources[idx],
+                "detected_by_layer": int(detected_by_layer[idx]),
+                "confidence": round(float(confidences[idx]), 5),
+                "text_preview": texts[idx][:150] + "..." if len(texts[idx]) > 150 else texts[idx],
+            }
+        )
 
     return {
         "thresholds": {"l2_bge": L2_THRESHOLD, "l3_deberta": L3_THRESHOLD},
         "overall": {
-            "total": n, "injection": n_inject, "benign": n_benign,
-            "f1": round(f1, 5), "precision": round(precision, 5),
-            "recall": round(recall, 5), "fpr": round(fpr, 5),
-            "tp": int(tp), "fp": int(fp), "fn": int(fn), "tn": int(tn),
+            "total": n,
+            "injection": n_inject,
+            "benign": n_benign,
+            "f1": round(f1, 5),
+            "precision": round(precision, 5),
+            "recall": round(recall, 5),
+            "fpr": round(fpr, 5),
+            "tp": int(tp),
+            "fp": int(fp),
+            "fn": int(fn),
+            "tn": int(tn),
         },
         "layer_contribution": {
             "l1_true_positives": layer_tp.get(1, 0),
@@ -240,14 +254,16 @@ def print_results(results: dict) -> None:
     print(f"\n{'=' * 70}")
     print("HOLDOUT EVALUATION RESULTS (ONE-SHOT)")
     print(f"{'=' * 70}")
-    print(f"  Thresholds: L2={results['thresholds']['l2_bge']}, "
-          f"L3={results['thresholds']['l3_deberta']}")
+    print(
+        f"  Thresholds: L2={results['thresholds']['l2_bge']}, "
+        f"L3={results['thresholds']['l3_deberta']}"
+    )
     print(f"  Samples:    {o['total']} ({o['injection']} injection, {o['benign']} benign)")
 
     # Targets
-    f1_pass = o['f1'] > 0.95
-    fpr_pass = o['fpr'] < 0.015
-    lat_pass = lat['median_ms'] < 100
+    f1_pass = o["f1"] > 0.95
+    fpr_pass = o["fpr"] < 0.015
+    lat_pass = lat["median_ms"] < 100
 
     print(f"\n  {'METRIC':>12}  {'VALUE':>10}  {'TARGET':>15}  {'STATUS':>6}")
     print(f"  {'-' * 50}")
@@ -255,7 +271,9 @@ def print_results(results: dict) -> None:
     print(f"  {'Precision':>12}  {o['precision']:>10.5f}  {'':>15}  {'':>6}")
     print(f"  {'Recall':>12}  {o['recall']:>10.5f}  {'':>15}  {'':>6}")
     print(f"  {'FPR':>12}  {o['fpr']:>10.5f}  {'< 0.015':>15}  {'PASS' if fpr_pass else 'FAIL':>6}")
-    print(f"  {'Latency':>12}  {lat['median_ms']:>8.1f}ms  {'< 100ms':>15}  {'PASS' if lat_pass else 'FAIL':>6}")
+    print(
+        f"  {'Latency':>12}  {lat['median_ms']:>8.1f}ms  {'< 100ms':>15}  {'PASS' if lat_pass else 'FAIL':>6}"
+    )
 
     print(f"\n  CONFUSION MATRIX:")
     print(f"    {'':>18} Pred Benign  Pred Injection")
@@ -268,7 +286,9 @@ def print_results(results: dict) -> None:
     print(f"    L3 (DeBERTa):  {lc['l3_true_positives']:>5} TP / {lc['l3_false_positives']} FP")
 
     print(f"\n  LATENCY (warm, excluding cold start):")
-    print(f"    Mean:   {lat['mean_ms']:.1f}ms  |  P95: {lat['p95_ms']:.1f}ms  |  P99: {lat['p99_ms']:.1f}ms")
+    print(
+        f"    Mean:   {lat['mean_ms']:.1f}ms  |  P95: {lat['p95_ms']:.1f}ms  |  P99: {lat['p99_ms']:.1f}ms"
+    )
 
     print(f"\n  PER-SOURCE BREAKDOWN:")
     print(f"    {'Source':>20} {'N':>6} {'F1':>8} {'Recall':>8} {'FPR':>8}")
@@ -279,14 +299,18 @@ def print_results(results: dict) -> None:
     if results["false_negatives_sample"]:
         print(f"\n  FALSE NEGATIVES (missed injections, showing first 10):")
         for fn in results["false_negatives_sample"][:10]:
-            print(f"    [{fn['source']}] conf={fn['l3_confidence']:.4f}: "
-                  f"{fn['text_preview'][:90]}")
+            print(
+                f"    [{fn['source']}] conf={fn['l3_confidence']:.4f}: "
+                f"{fn['text_preview'][:90]}"
+            )
 
     if results["false_positives_sample"]:
         print(f"\n  FALSE POSITIVES (wrongly flagged, showing first 10):")
         for fp_item in results["false_positives_sample"][:10]:
-            print(f"    [{fp_item['source']}] L{fp_item['detected_by_layer']} "
-                  f"conf={fp_item['confidence']:.4f}: {fp_item['text_preview'][:90]}")
+            print(
+                f"    [{fp_item['source']}] L{fp_item['detected_by_layer']} "
+                f"conf={fp_item['confidence']:.4f}: {fp_item['text_preview'][:90]}"
+            )
 
     print(f"\n  Total wall time: {results['total_eval_seconds']:.0f}s")
 
@@ -313,8 +337,10 @@ def main():
     texts = holdout["text"].tolist()
     labels = holdout["label"].values
     sources = holdout["source"].tolist()
-    print(f"  {len(holdout)} samples "
-          f"(injection: {(labels==1).sum()}, benign: {(labels==0).sum()})")
+    print(
+        f"  {len(holdout)} samples "
+        f"(injection: {(labels==1).sum()}, benign: {(labels==0).sum()})"
+    )
 
     # Run evaluation
     print("\n[2/2] Running cascade evaluation...")
@@ -343,14 +369,16 @@ def main():
                     "holdout_samples": len(holdout),
                 },
             )
-            wandb.log({
-                "holdout_f1": results["overall"]["f1"],
-                "holdout_precision": results["overall"]["precision"],
-                "holdout_recall": results["overall"]["recall"],
-                "holdout_fpr": results["overall"]["fpr"],
-                "latency_median_ms": results["latency"]["median_ms"],
-                "latency_p95_ms": results["latency"]["p95_ms"],
-            })
+            wandb.log(
+                {
+                    "holdout_f1": results["overall"]["f1"],
+                    "holdout_precision": results["overall"]["precision"],
+                    "holdout_recall": results["overall"]["recall"],
+                    "holdout_fpr": results["overall"]["fpr"],
+                    "latency_median_ms": results["latency"]["median_ms"],
+                    "latency_p95_ms": results["latency"]["p95_ms"],
+                }
+            )
             wandb.finish()
             print("WandB logging complete")
         except Exception as e:

@@ -58,12 +58,14 @@ def load_existing_phrases() -> list[dict]:
             line = line.strip()
             if line:
                 record = json.loads(line)
-                phrases.append({
-                    "text": record["text"],
-                    "category": record.get("category", "unknown"),
-                    "source": "hand_curated",
-                    "id": record.get("id", ""),
-                })
+                phrases.append(
+                    {
+                        "text": record["text"],
+                        "category": record.get("category", "unknown"),
+                        "source": "hand_curated",
+                        "id": record.get("id", ""),
+                    }
+                )
     print(f"  Existing hand-curated: {len(phrases)} phrases")
     return phrases
 
@@ -77,19 +79,23 @@ def load_jailbreakbench() -> list[dict]:
     """Load JailbreakBench attack behaviors from HuggingFace."""
     try:
         from datasets import load_dataset
-        ds = load_dataset("JailbreakBench/JBB-Behaviors", "behaviors",
-                          split="harmful", cache_dir=str(HF_CACHE))
+
+        ds = load_dataset(
+            "JailbreakBench/JBB-Behaviors", "behaviors", split="harmful", cache_dir=str(HF_CACHE)
+        )
         phrases = []
         for row in ds:
             # JBB has 'Goal' and 'Behavior' fields
             text = row.get("Goal") or row.get("Behavior") or row.get("text", "")
             if text and len(text.strip()) > 10:
-                phrases.append({
-                    "text": text.strip(),
-                    "category": "jailbreak",
-                    "source": "jailbreakbench",
-                    "id": "",
-                })
+                phrases.append(
+                    {
+                        "text": text.strip(),
+                        "category": "jailbreak",
+                        "source": "jailbreakbench",
+                        "id": "",
+                    }
+                )
         print(f"  JailbreakBench: {len(phrases)} phrases")
         return phrases
     except Exception as e:
@@ -101,11 +107,11 @@ def load_injecagent() -> list[dict]:
     """Load InjecAgent indirect injection prompts."""
     try:
         from datasets import load_dataset
+
         # Try multiple possible dataset names
         for name in ["NirDiamant/InjecAgent", "satml-submission/InjecAgent"]:
             try:
-                ds = load_dataset(name, cache_dir=str(HF_CACHE),
-                                  trust_remote_code=False)
+                ds = load_dataset(name, cache_dir=str(HF_CACHE), trust_remote_code=False)
                 break
             except Exception:
                 continue
@@ -117,16 +123,22 @@ def load_injecagent() -> list[dict]:
         split = list(ds.keys())[0]  # Use first available split
         for row in ds[split]:
             # Look for injection text in various fields
-            text = (row.get("injected_prompt") or row.get("attack_prompt")
-                    or row.get("prompt") or row.get("text", ""))
+            text = (
+                row.get("injected_prompt")
+                or row.get("attack_prompt")
+                or row.get("prompt")
+                or row.get("text", "")
+            )
             if text and len(text.strip()) > 10:
                 cat = row.get("attack_type", "indirect_injection")
-                phrases.append({
-                    "text": text.strip(),
-                    "category": f"indirect_injection_{cat}" if cat else "indirect_injection",
-                    "source": "injecagent",
-                    "id": "",
-                })
+                phrases.append(
+                    {
+                        "text": text.strip(),
+                        "category": f"indirect_injection_{cat}" if cat else "indirect_injection",
+                        "source": "injecagent",
+                        "id": "",
+                    }
+                )
         print(f"  InjecAgent: {len(phrases)} phrases")
         return phrases
     except Exception as e:
@@ -138,21 +150,27 @@ def load_bipia() -> list[dict]:
     """Load BIPIA indirect injection benchmarks."""
     try:
         from datasets import load_dataset
-        ds = load_dataset("microsoft/BIPIA", cache_dir=str(HF_CACHE),
-                          trust_remote_code=False)
+
+        ds = load_dataset("microsoft/BIPIA", cache_dir=str(HF_CACHE), trust_remote_code=False)
         phrases = []
         split = list(ds.keys())[0]
         for row in ds[split]:
-            text = (row.get("injected_prompt") or row.get("attack")
-                    or row.get("prompt") or row.get("text", ""))
+            text = (
+                row.get("injected_prompt")
+                or row.get("attack")
+                or row.get("prompt")
+                or row.get("text", "")
+            )
             if text and len(text.strip()) > 10:
                 cat = row.get("attack_type", "indirect_injection")
-                phrases.append({
-                    "text": text.strip(),
-                    "category": f"bipia_{cat}" if cat else "indirect_injection",
-                    "source": "bipia",
-                    "id": "",
-                })
+                phrases.append(
+                    {
+                        "text": text.strip(),
+                        "category": f"bipia_{cat}" if cat else "indirect_injection",
+                        "source": "bipia",
+                        "id": "",
+                    }
+                )
         print(f"  BIPIA: {len(phrases)} phrases")
         return phrases
     except Exception as e:
@@ -195,8 +213,9 @@ def mine_training_injections(
 
         # Encode candidates
         texts = sample["text"].tolist()
-        candidate_embs = model.encode(texts, normalize_embeddings=True,
-                                       batch_size=64, show_progress_bar=False)
+        candidate_embs = model.encode(
+            texts, normalize_embeddings=True, batch_size=64, show_progress_bar=False
+        )
 
         # Filter: keep only if sufficiently different from existing library
         added = 0
@@ -217,12 +236,14 @@ def mine_training_injections(
             if pd.isna(cat) or cat == "None":
                 cat = "direct_injection"
 
-            phrases.append({
-                "text": text.strip(),
-                "category": str(cat),
-                "source": f"train_{source}",
-                "id": "",
-            })
+            phrases.append(
+                {
+                    "text": text.strip(),
+                    "category": str(cat),
+                    "source": f"train_{source}",
+                    "id": "",
+                }
+            )
             added += 1
 
             # Update existing embeddings for next comparison
@@ -262,8 +283,7 @@ def remove_holdout_contamination(phrases: list[dict]) -> list[dict]:
 
     holdout = pd.read_csv(HOLDOUT_PATH)
     holdout_hashes = {
-        xxhash.xxh64(str(t).strip().encode("utf-8")).hexdigest()
-        for t in holdout["text"]
+        xxhash.xxh64(str(t).strip().encode("utf-8")).hexdigest() for t in holdout["text"]
     }
 
     clean = []
@@ -317,8 +337,10 @@ def main():
     print("\n  Encoding current library for diversity filtering...")
     current_texts = [p["text"] for p in all_phrases]
     current_embeddings = model.encode(
-        current_texts, normalize_embeddings=True,
-        batch_size=64, show_progress_bar=True,
+        current_texts,
+        normalize_embeddings=True,
+        batch_size=64,
+        show_progress_bar=True,
     )
 
     # Step 5: Mine training data for diverse phrases
@@ -356,11 +378,15 @@ def main():
     print("\n[6/7] Encoding all phrases with BGE-small...")
     all_texts = [p["text"] for p in all_phrases]
     all_embeddings = model.encode(
-        all_texts, normalize_embeddings=True,
-        batch_size=64, show_progress_bar=True,
+        all_texts,
+        normalize_embeddings=True,
+        batch_size=64,
+        show_progress_bar=True,
     )
-    assert all_embeddings.shape == (len(all_phrases), BGE_DIM), \
-        f"Unexpected shape: {all_embeddings.shape}"
+    assert all_embeddings.shape == (
+        len(all_phrases),
+        BGE_DIM,
+    ), f"Unexpected shape: {all_embeddings.shape}"
     print(f"  Embeddings shape: {all_embeddings.shape}")
 
     # Step 7: Save outputs

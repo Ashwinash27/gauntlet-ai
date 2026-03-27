@@ -28,7 +28,9 @@ _DEFAULT_EMBEDDINGS_PATH = _DATA_DIR / "embeddings.npz"
 _DEFAULT_METADATA_PATH = _DATA_DIR / "metadata.json"
 _DEFAULT_BGE_EMBEDDINGS_PATH = _DATA_DIR / "attack_vectors_bge.npy"
 _DEFAULT_BGE_METADATA_PATH = _DATA_DIR / "metadata_bge.json"
-_DEFAULT_BGE_MODEL_PATH = Path(__file__).parent.parent.parent / ".hf_cache" / "bge-small-en-v1.5-local"
+_DEFAULT_BGE_MODEL_PATH = (
+    Path(__file__).parent.parent.parent / ".hf_cache" / "bge-small-en-v1.5-local"
+)
 
 
 @dataclass
@@ -83,8 +85,7 @@ class EmbeddingsDetector:
             import numpy as np
         except ImportError:
             raise ImportError(
-                "Layer 2 requires numpy. "
-                "Install with: pip install gauntlet-ai[embeddings]"
+                "Layer 2 requires numpy. " "Install with: pip install gauntlet-ai[embeddings]"
             )
 
         self._np = np
