@@ -1,0 +1,48 @@
+{
+  "best_config": {
+    "l2_threshold": 0.89,
+    "l3_threshold": 0.49,
+    "f1": 0.98036,
+    "precision": 0.97626,
+    "recall": 0.98451,
+    "fpr": 0.01493,
+    "fp": 51
+  },
+  "best_recall_at_1pct_fpr": null,
+  "grid_size": 1848,
+  "l2_range": [
+    0.65,
+    0.92,
+    0.01
+  ],
+  "l3_range": [
+    0.3,
+    0.95,
+    0.01
+  ],
+  "fpr_ceiling": 0.015,
+  "val_samples": 5545,
+  "timing": {
+    "l1_seconds": 2.7,
+    "l2_seconds": 86.6,
+    "l3_seconds": 71.0,
+    "grid_sweep_seconds": 5.528
+  },
+  "l1_stats": {
+    "flagged": 396,
+    "true_positives": 381,
+    "false_positives": 15
+  },
+  "l2_score_stats": {
+    "mean": 0.7216,
+    "std": 0.0952,
+    "injection_mean": 0.8133,
+    "benign_mean": 0.6644
+  },
+  "l3_score_stats": {
+    "mean": 0.3851,
+    "std": 0.4848,
+    "injection_mean": 0.9829,
+    "benign_mean": 0.0122
+  }
+}

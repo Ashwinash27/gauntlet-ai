@@ -179,15 +179,15 @@ To measure generalization beyond the training set, we evaluate on three separate
 
 | Benchmark | Samples | Config | Precision | Recall | F1 | FPR | Avg Latency |
 |-----------|---------|--------|-----------|--------|----|-----|-------------|
-| Internal (known) | 150m + 1000b | L1 | 93.75% | 40.00% | 56.07% | 0.40% | 0.2ms |
-| Internal (known) | 150m + 1000b | L1+2 | 96.15% | 100.00% | 98.04% | 0.60% | 256ms |
-| Internal (known) | 150m + 1000b | L1+2+3 | 65.22% | 100.00% | 78.95% | 8.00% | 1335ms |
+| Internal (known) | 150m + 1000b | L1 | 93.85% | 40.67% | 56.74% | 0.40% | 0.2ms |
+| Internal (known) | 150m + 1000b | L1+2 | 96.15% | 100.00% | 98.04% | 0.60% | 249ms |
+| Internal (known) | 150m + 1000b | L1+2+3 | 64.10% | 100.00% | 78.13% | 8.40% | 1366ms |
 | Internal (holdout) | 100m + 1000b | L1 | 90.70% | 39.00% | 54.55% | 0.40% | 0.2ms |
-| Internal (holdout) | 100m + 1000b | L1+2 | 94.23% | 98.00% | 96.08% | 0.60% | 247ms |
-| Internal (holdout) | 100m + 1000b | L1+2+3 | 53.51% | 99.00% | 69.47% | 8.60% | 1378ms |
-| PINT external | 203m + 343b | L1 | 92.00% | 11.33% | 20.18% | 0.58% | 0.3ms |
-| PINT external | 203m + 343b | L1+2 | 92.31% | 11.82% | 20.96% | 0.58% | 237ms |
-| PINT external | 203m + 343b | L1+2+3 | 95.35% | 60.59% | 74.10% | 1.75% | 1444ms |
+| Internal (holdout) | 100m + 1000b | L1+2 | 94.23% | 98.00% | 96.08% | 0.60% | 202ms |
+| Internal (holdout) | 100m + 1000b | L1+2+3 | 56.90% | 99.00% | 72.26% | 7.50% | 1105ms |
+| PINT external | 203m + 343b | L1 | 98.02% | 48.77% | 65.13% | 0.58% | 0.2ms |
+| PINT external | 203m + 343b | L1+2 | 98.30% | 85.22% | 91.29% | 0.87% | 200ms |
+| PINT external | 203m + 343b | L1+2+3 | 96.94% | 93.60% | 95.24% | 1.75% | 793ms |
 
 #### After Embedding Expansion + Regex Expansion (evaluated on held-out PINT test)
 

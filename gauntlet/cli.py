@@ -47,6 +47,9 @@ def _get_app():
         layers: str = typer.Option(
             None, "--layers", "-l", help="Comma-separated layer numbers (e.g., 1,2)"
         ),
+        mode: str = typer.Option(
+            None, "--mode", "-m", help="Detection mode: 'cloud' or 'slm'"
+        ),
         output_json: bool = typer.Option(False, "--json", "-j", help="Output as JSON"),
     ) -> None:
         """Detect prompt injection in text."""
@@ -70,8 +73,11 @@ def _get_app():
             err_console.print("[red]Empty input[/red]")
             raise typer.Exit(1)
 
-        # Configure layers
-        g = Gauntlet()
+        # Configure detector
+        kwargs = {}
+        if mode:
+            kwargs["mode"] = mode
+        g = Gauntlet(**kwargs)
         run_layers = None
         if layers:
             run_layers = [int(l.strip()) for l in layers.split(",")]
@@ -126,10 +132,16 @@ def _get_app():
 
         # Show skipped layers
         if result.layers_skipped:
-            layer_names = {
-                2: "embeddings (needs OpenAI key + numpy)",
-                3: "llm_judge (needs Anthropic key)",
-            }
+            if g._mode == "slm":
+                layer_names = {
+                    2: "embeddings (needs sentence-transformers + numpy)",
+                    3: "slm_judge (needs torch + transformers)",
+                }
+            else:
+                layer_names = {
+                    2: "embeddings (needs OpenAI key + numpy)",
+                    3: "llm_judge (needs Anthropic key)",
+                }
             console.print()
             console.print(f"  [dim]Layers skipped:[/dim]")
             for layer_num in result.layers_skipped:
@@ -145,6 +157,9 @@ def _get_app():
         directory: Path = typer.Argument(..., help="Directory to scan"),
         pattern: str = typer.Option("*.txt", "--pattern", "-p", help="File glob pattern"),
         all_layers: bool = typer.Option(False, "--all", "-a", help="Run all configured layers"),
+        mode: str = typer.Option(
+            None, "--mode", "-m", help="Detection mode: 'cloud' or 'slm'"
+        ),
         output_json: bool = typer.Option(False, "--json", "-j", help="Output as JSON"),
     ) -> None:
         """Scan files in a directory for prompt injections."""
@@ -159,7 +174,10 @@ def _get_app():
             err_console.print(f"[yellow]No files matching '{pattern}' in {directory}[/yellow]")
             raise typer.Exit(0)
 
-        g = Gauntlet()
+        kwargs = {}
+        if mode:
+            kwargs["mode"] = mode
+        g = Gauntlet(**kwargs)
         run_layers = None if all_layers else [1]
         results = []
         flagged = 0

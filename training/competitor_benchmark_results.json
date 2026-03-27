@@ -1,0 +1,60 @@
+{
+  "results": [
+    {
+      "model": "Meta-PromptGuard2-86M",
+      "dataset": "NotInject",
+      "total": 339,
+      "injection": 0,
+      "benign": 339,
+      "tp": 0,
+      "fp": 22,
+      "fn": 0,
+      "tn": 317,
+      "f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "fpr": 0.0649,
+      "over_defense_accuracy": 0.9351,
+      "latency_mean_ms": 27.12,
+      "eval_seconds": 9.5
+    },
+    {
+      "model": "Meta-PromptGuard2-86M",
+      "dataset": "ProtectAI-Validation",
+      "total": 3227,
+      "injection": 1392,
+      "benign": 1835,
+      "tp": 423,
+      "fp": 173,
+      "fn": 969,
+      "tn": 1662,
+      "f1": 0.42555,
+      "precision": 0.70973,
+      "recall": 0.30388,
+      "fpr": 0.09428,
+      "over_defense_accuracy": 0.90572,
+      "latency_mean_ms": 9.24,
+      "eval_seconds": 29.8
+    }
+  ],
+  "gauntlet_results": [
+    {
+      "model": "Gauntlet-v0.3.0",
+      "dataset": "NotInject",
+      "f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "fpr": 0.60472,
+      "over_defense_accuracy": 0.39528
+    },
+    {
+      "model": "Gauntlet-v0.3.0",
+      "dataset": "ProtectAI-Validation",
+      "f1": 0.6321,
+      "precision": 0.55659,
+      "recall": 0.73132,
+      "fpr": 0.44196,
+      "over_defense_accuracy": 0.55804
+    }
+  ]
+}

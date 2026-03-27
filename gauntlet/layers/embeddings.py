@@ -4,9 +4,13 @@ This module provides semantic similarity-based detection for prompt injection
 attacks. It compares user input embeddings against pre-computed attack
 embeddings using local numpy cosine similarity.
 
-Detection flow: Input text -> OpenAI embedding -> Local cosine similarity -> threshold check
+Detection flow:
+- Cloud mode: Input text -> OpenAI embedding -> Local cosine similarity -> threshold check
+- SLM mode: Input text -> BGE-small embedding -> Local cosine similarity -> threshold check
 
-Requires: pip install gauntlet-ai[embeddings] (openai, numpy)
+Requires:
+- Cloud mode: pip install gauntlet-ai[embeddings] (openai, numpy)
+- SLM mode: pip install gauntlet-ai[slm] (sentence-transformers, numpy)
 """
 
 import logging
@@ -22,6 +26,9 @@ logger = logging.getLogger(__name__)
 _DATA_DIR = Path(__file__).parent.parent / "data"
 _DEFAULT_EMBEDDINGS_PATH = _DATA_DIR / "embeddings.npz"
 _DEFAULT_METADATA_PATH = _DATA_DIR / "metadata.json"
+_DEFAULT_BGE_EMBEDDINGS_PATH = _DATA_DIR / "attack_vectors_bge.npy"
+_DEFAULT_BGE_METADATA_PATH = _DATA_DIR / "metadata_bge.json"
+_DEFAULT_BGE_MODEL_PATH = Path(__file__).parent.parent.parent / ".hf_cache" / "bge-small-en-v1.5-local"
 
 
 @dataclass
@@ -42,50 +49,90 @@ class EmbeddingsDetector:
     that bypass Layer 1's regex patterns by using semantic similarity
     to pre-computed attack embeddings shipped with the package.
 
-    Requires an OpenAI API key for generating input embeddings.
+    Supports two modes:
+    - "cloud": Uses OpenAI API for embeddings (requires API key)
+    - "slm": Uses local BGE-small model via sentence-transformers (no API key needed)
     """
 
     def __init__(
         self,
-        openai_key: str,
+        openai_key: str | None = None,
         threshold: float = 0.80,
         model: str = "text-embedding-3-small",
         embeddings_path: Path | None = None,
         metadata_path: Path | None = None,
+        *,
+        mode: str = "cloud",
     ) -> None:
         """Initialize the embeddings detector.
 
         Args:
-            openai_key: OpenAI API key for generating embeddings.
+            openai_key: OpenAI API key for generating embeddings (cloud mode only).
             threshold: Similarity threshold (0.0-1.0). Default 0.80.
-            model: Embedding model name.
-            embeddings_path: Path to .npz file with pre-computed embeddings.
+            model: Embedding model name (cloud mode only).
+            embeddings_path: Path to embeddings file (.npz for cloud, .npy for SLM).
             metadata_path: Path to metadata JSON file.
+            mode: "cloud" for OpenAI API or "slm" for local BGE-small model.
         """
+        if mode not in ("cloud", "slm"):
+            raise ValueError(f"Invalid mode: {mode}. Must be 'cloud' or 'slm'.")
+
+        self._mode = mode
+
         try:
             import numpy as np
-            from openai import OpenAI
         except ImportError:
             raise ImportError(
-                "Layer 2 requires openai and numpy. "
+                "Layer 2 requires numpy. "
                 "Install with: pip install gauntlet-ai[embeddings]"
             )
 
         self._np = np
-        self._client = OpenAI(api_key=openai_key, timeout=10.0)
+        self._client = None
+        self._st_model = None
         self.threshold = threshold
         self.model = model
 
-        # Load pre-computed embeddings
-        emb_path = embeddings_path or _DEFAULT_EMBEDDINGS_PATH
-        meta_path = metadata_path or _DEFAULT_METADATA_PATH
+        if mode == "cloud":
+            try:
+                from openai import OpenAI
+            except ImportError:
+                raise ImportError(
+                    "Layer 2 cloud mode requires openai and numpy. "
+                    "Install with: pip install gauntlet-ai[embeddings]"
+                )
+            self._client = OpenAI(api_key=openai_key, timeout=10.0)
+        else:
+            try:
+                from sentence_transformers import SentenceTransformer
+            except ImportError:
+                raise ImportError(
+                    "Layer 2 SLM mode requires sentence-transformers. "
+                    "Install with: pip install gauntlet-ai[slm]"
+                )
+            # Load from local path first (fully offline), fall back to HuggingFace Hub
+            if _DEFAULT_BGE_MODEL_PATH.exists():
+                self._st_model = SentenceTransformer(str(_DEFAULT_BGE_MODEL_PATH))
+            else:
+                self._st_model = SentenceTransformer("BAAI/bge-small-en-v1.5")
+
+        # Resolve default paths based on mode
+        if mode == "slm":
+            emb_path = embeddings_path or _DEFAULT_BGE_EMBEDDINGS_PATH
+            meta_path = metadata_path or _DEFAULT_BGE_METADATA_PATH
+        else:
+            emb_path = embeddings_path or _DEFAULT_EMBEDDINGS_PATH
+            meta_path = metadata_path or _DEFAULT_METADATA_PATH
 
         self._embeddings = None
         self._metadata = None
 
         if emb_path.exists():
-            data = np.load(str(emb_path), allow_pickle=False)
-            self._embeddings = data["embeddings"]
+            if str(emb_path).endswith(".npy"):
+                self._embeddings = np.load(str(emb_path), allow_pickle=False)
+            else:
+                data = np.load(str(emb_path), allow_pickle=False)
+                self._embeddings = data["embeddings"]
         else:
             logger.warning(f"Embeddings file not found: {emb_path}")
 
@@ -98,7 +145,9 @@ class EmbeddingsDetector:
             logger.warning(f"Metadata file not found: {meta_path}")
 
     def _get_embedding(self, text: str) -> list[float]:
-        """Generate embedding for input text using OpenAI API.
+        """Generate embedding for input text.
+
+        Uses OpenAI API in cloud mode or local SentenceTransformer in SLM mode.
 
         Args:
             text: The input text to embed.
@@ -106,11 +155,15 @@ class EmbeddingsDetector:
         Returns:
             List of floats representing the embedding vector.
         """
-        response = self._client.embeddings.create(
-            model=self.model,
-            input=text,
-        )
-        return response.data[0].embedding
+        if self._mode == "slm":
+            embedding = self._st_model.encode([text], normalize_embeddings=True)[0]
+            return embedding.tolist()
+        else:
+            response = self._client.embeddings.create(
+                model=self.model,
+                input=text,
+            )
+            return response.data[0].embedding
 
     def _cosine_similarity(
         self, query: list[float], threshold: float | None = None

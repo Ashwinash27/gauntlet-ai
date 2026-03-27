@@ -248,6 +248,8 @@ class TestListConfig:
                     "embedding_threshold",
                     "llm_model",
                     "llm_timeout",
+                    "mode",
+                    "slm_model_path",
                 }
                 assert set(result.keys()) == expected_keys
 

@@ -20,6 +20,8 @@ _KEY_MAP = {
     "embedding_threshold": "GAUNTLET_EMBEDDING_THRESHOLD",
     "llm_model": "GAUNTLET_LLM_MODEL",
     "llm_timeout": "GAUNTLET_LLM_TIMEOUT",
+    "mode": "GAUNTLET_MODE",
+    "slm_model_path": "GAUNTLET_SLM_MODEL_PATH",
 }
 
 
@@ -165,6 +167,16 @@ def get_anthropic_key() -> str | None:
     return get_config_value("anthropic_key")
 
 
+def get_mode() -> str | None:
+    """Get detection mode from config or env ('cloud' or 'slm')."""
+    return get_config_value("mode")
+
+
+def get_slm_model_path() -> str | None:
+    """Get SLM model checkpoint path from config or env."""
+    return get_config_value("slm_model_path")
+
+
 __all__ = [
     "load_config",
     "get_config_value",
@@ -172,4 +184,6 @@ __all__ = [
     "list_config",
     "get_openai_key",
     "get_anthropic_key",
+    "get_mode",
+    "get_slm_model_path",
 ]

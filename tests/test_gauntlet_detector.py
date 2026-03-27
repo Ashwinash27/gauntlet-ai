@@ -563,3 +563,94 @@ class TestErrorsAndSkipped:
         assert "layers_skipped" in d
         assert isinstance(d["errors"], list)
         assert isinstance(d["layers_skipped"], list)
+
+
+# ---------------------------------------------------------------------------
+# TestSLMMode — SLM mode routing and behavior
+# ---------------------------------------------------------------------------
+
+
+class TestSLMMode:
+    """Tests for SLM mode in the cascade orchestrator."""
+
+    def test_slm_mode_skips_api_key_resolution(self) -> None:
+        """SLM mode should not resolve API keys."""
+        with patch("gauntlet.detector.get_mode", return_value=None):
+            g = Gauntlet(mode="slm")
+        assert g._openai_key is None
+        assert g._anthropic_key is None
+        assert g._mode == "slm"
+
+    def test_slm_mode_ignores_env_api_keys(self) -> None:
+        """SLM mode should ignore API keys in environment."""
+        with (
+            patch("gauntlet.detector.get_mode", return_value=None),
+            patch.dict(os.environ, {
+                "OPENAI_API_KEY": "sk-real-key",
+                "ANTHROPIC_API_KEY": "sk-ant-real-key",
+            }),
+        ):
+            g = Gauntlet(mode="slm")
+        assert g._openai_key is None
+        assert g._anthropic_key is None
+
+    def test_slm_mode_available_layers(self) -> None:
+        """SLM mode should check for torch/transformers, not API keys."""
+        with patch("gauntlet.detector.get_mode", return_value=None):
+            g = Gauntlet(mode="slm")
+        layers = g.available_layers
+        assert 1 in layers
+
+    def test_cloud_mode_unchanged(self) -> None:
+        """Cloud mode should still check API keys as before."""
+        with (
+            patch("gauntlet.detector.get_openai_key", return_value="sk-test"),
+            patch("gauntlet.detector.get_anthropic_key", return_value="sk-ant-test"),
+            patch("gauntlet.detector.get_mode", return_value=None),
+        ):
+            g = Gauntlet(mode="cloud")
+        assert g._openai_key == "sk-test"
+        assert g._anthropic_key == "sk-ant-test"
+        assert g._mode == "cloud"
+
+    def test_invalid_mode_raises(self) -> None:
+        """Invalid mode should raise ValueError."""
+        with pytest.raises(ValueError, match="Invalid mode"):
+            Gauntlet(mode="invalid")
+
+    def test_mode_from_env(self) -> None:
+        """Mode should be resolved from GAUNTLET_MODE env var."""
+        with patch("gauntlet.detector.get_mode", return_value="slm"):
+            g = Gauntlet()
+        assert g._mode == "slm"
+
+    def test_constructor_mode_overrides_env(self) -> None:
+        """Constructor mode should override env var."""
+        with patch("gauntlet.detector.get_mode", return_value="slm"):
+            g = Gauntlet(mode="cloud")
+        assert g._mode == "cloud"
+
+    def test_slm_mode_cascade_with_mock_layers(self) -> None:
+        """SLM mode cascade should work with mocked layers."""
+        with patch("gauntlet.detector.get_mode", return_value=None):
+            g = Gauntlet(mode="slm")
+
+        # Mock Layer 2 to pass
+        mock_l2 = MagicMock()
+        mock_l2.detect.return_value = LayerResult(
+            is_injection=False, confidence=0.0, attack_type=None,
+            layer=2, latency_ms=1.0,
+        )
+        g._embeddings = mock_l2
+
+        # Mock Layer 3 to detect
+        mock_l3 = MagicMock()
+        mock_l3.detect.return_value = LayerResult(
+            is_injection=True, confidence=0.95, attack_type="jailbreak",
+            layer=3, latency_ms=50.0,
+        )
+        g._llm = mock_l3
+
+        result = g.detect("subtle attack that bypasses regex and embeddings")
+        assert result.is_injection is True
+        assert result.detected_by_layer == 3

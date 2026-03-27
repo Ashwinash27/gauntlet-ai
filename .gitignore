@@ -53,6 +53,21 @@ htmlcov/
 data/raw/
 *.parquet
 *.arrow
+*.npy
+
+# HuggingFace cache
+.hf_cache/
+
+# Training artifacts (large)
+training/checkpoints/
+training/splits_v3/
+training/splits_nli/
+wandb/
+
+# Model files
+*.bin
+*.safetensors
+*.onnx
 
 # Evaluation artifacts (regenerate with python -m evaluation.benchmark)
 evaluation/results.json

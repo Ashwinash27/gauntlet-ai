@@ -1,0 +1,216 @@
+{
+  "best_threshold": 0.8,
+  "best_result": {
+    "threshold": 0.8,
+    "f1": 0.71534,
+    "precision": 0.96568,
+    "recall": 0.56808,
+    "fpr": 0.01259
+  },
+  "all_results": [
+    {
+      "threshold": 0.65,
+      "f1": 0.67625,
+      "precision": 0.51234,
+      "recall": 0.99437,
+      "fpr": 0.59034
+    },
+    {
+      "threshold": 0.66,
+      "f1": 0.6999,
+      "precision": 0.54069,
+      "recall": 0.99202,
+      "fpr": 0.52562
+    },
+    {
+      "threshold": 0.67,
+      "f1": 0.72508,
+      "precision": 0.57306,
+      "recall": 0.98685,
+      "fpr": 0.45857
+    },
+    {
+      "threshold": 0.68,
+      "f1": 0.75198,
+      "precision": 0.60975,
+      "recall": 0.98075,
+      "fpr": 0.39151
+    },
+    {
+      "threshold": 0.69,
+      "f1": 0.77874,
+      "precision": 0.64903,
+      "recall": 0.97324,
+      "fpr": 0.32826
+    },
+    {
+      "threshold": 0.7,
+      "f1": 0.80401,
+      "precision": 0.69158,
+      "recall": 0.96009,
+      "fpr": 0.26706
+    },
+    {
+      "threshold": 0.71,
+      "f1": 0.82432,
+      "precision": 0.73094,
+      "recall": 0.94507,
+      "fpr": 0.21698
+    },
+    {
+      "threshold": 0.72,
+      "f1": 0.84528,
+      "precision": 0.78029,
+      "recall": 0.92207,
+      "fpr": 0.16193
+    },
+    {
+      "threshold": 0.73,
+      "f1": 0.86131,
+      "precision": 0.82502,
+      "recall": 0.90094,
+      "fpr": 0.11918
+    },
+    {
+      "threshold": 0.74,
+      "f1": 0.86409,
+      "precision": 0.86107,
+      "recall": 0.86714,
+      "fpr": 0.08726
+    },
+    {
+      "threshold": 0.75,
+      "f1": 0.85471,
+      "precision": 0.88732,
+      "recall": 0.82441,
+      "fpr": 0.0653
+    },
+    {
+      "threshold": 0.76,
+      "f1": 0.83684,
+      "precision": 0.91055,
+      "recall": 0.77418,
+      "fpr": 0.04744
+    },
+    {
+      "threshold": 0.77,
+      "f1": 0.81668,
+      "precision": 0.92513,
+      "recall": 0.73099,
+      "fpr": 0.0369
+    },
+    {
+      "threshold": 0.78,
+      "f1": 0.78387,
+      "precision": 0.94261,
+      "recall": 0.67089,
+      "fpr": 0.02548
+    },
+    {
+      "threshold": 0.79,
+      "f1": 0.75128,
+      "precision": 0.95376,
+      "recall": 0.61972,
+      "fpr": 0.01874
+    },
+    {
+      "threshold": 0.8,
+      "f1": 0.71534,
+      "precision": 0.96568,
+      "recall": 0.56808,
+      "fpr": 0.01259
+    },
+    {
+      "threshold": 0.81,
+      "f1": 0.6681,
+      "precision": 0.97048,
+      "recall": 0.50939,
+      "fpr": 0.00966
+    },
+    {
+      "threshold": 0.82,
+      "f1": 0.61963,
+      "precision": 0.97773,
+      "recall": 0.45352,
+      "fpr": 0.00644
+    },
+    {
+      "threshold": 0.83,
+      "f1": 0.5603,
+      "precision": 0.98465,
+      "recall": 0.39155,
+      "fpr": 0.00381
+    },
+    {
+      "threshold": 0.84,
+      "f1": 0.50315,
+      "precision": 0.98764,
+      "recall": 0.33756,
+      "fpr": 0.00264
+    },
+    {
+      "threshold": 0.85,
+      "f1": 0.45072,
+      "precision": 0.9873,
+      "recall": 0.29202,
+      "fpr": 0.00234
+    },
+    {
+      "threshold": 0.86,
+      "f1": 0.4,
+      "precision": 0.98889,
+      "recall": 0.2507,
+      "fpr": 0.00176
+    },
+    {
+      "threshold": 0.87,
+      "f1": 0.33981,
+      "precision": 0.98869,
+      "recall": 0.20516,
+      "fpr": 0.00146
+    },
+    {
+      "threshold": 0.88,
+      "f1": 0.28617,
+      "precision": 0.99441,
+      "recall": 0.16714,
+      "fpr": 0.00059
+    },
+    {
+      "threshold": 0.89,
+      "f1": 0.22648,
+      "precision": 1.0,
+      "recall": 0.1277,
+      "fpr": 0.0
+    },
+    {
+      "threshold": 0.9,
+      "f1": 0.17871,
+      "precision": 1.0,
+      "recall": 0.09812,
+      "fpr": 0.0
+    },
+    {
+      "threshold": 0.91,
+      "f1": 0.14217,
+      "precision": 1.0,
+      "recall": 0.07653,
+      "fpr": 0.0
+    },
+    {
+      "threshold": 0.92,
+      "f1": 0.11921,
+      "precision": 1.0,
+      "recall": 0.06338,
+      "fpr": 0.0
+    }
+  ],
+  "attack_library_size": 1403,
+  "val_samples": 5545,
+  "similarity_stats": {
+    "injection_mean": 0.8133,
+    "injection_median": 0.8118,
+    "benign_mean": 0.6644,
+    "benign_median": 0.6639
+  }
+}

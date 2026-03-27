@@ -40,7 +40,9 @@ async def test_health_endpoint(client):
     assert resp.status_code == 200
     data = resp.json()
     assert data["status"] == "healthy"
-    assert data["version"] == "0.2.0"
+    assert data["version"] == "0.3.0"
+    assert "mode" in data
+    assert data["mode"] in ("cloud", "slm")
     assert 1 in data["available_layers"]
 
 

@@ -7,7 +7,7 @@ prompt injection detection.
 import logging
 import time
 
-from gauntlet.config import get_anthropic_key, get_openai_key
+from gauntlet.config import get_anthropic_key, get_mode, get_openai_key, get_slm_model_path
 from gauntlet.layers.rules import RulesDetector
 from gauntlet._logging import _log_detection_event
 from gauntlet.models import DetectionResult, LayerResult
@@ -20,8 +20,8 @@ class Gauntlet:
 
     Orchestrates detection through:
     - Layer 1: Rules (fast regex pattern matching) - always available
-    - Layer 2: Embeddings (semantic similarity) - requires OpenAI key
-    - Layer 3: LLM Judge (Claude reasoning) - requires Anthropic key
+    - Layer 2: Embeddings (semantic similarity) - OpenAI API (cloud) or BGE-small (slm)
+    - Layer 3: LLM Judge - Claude API (cloud) or DeBERTa classifier (slm)
 
     The pipeline stops at the first layer that detects an injection.
 
@@ -30,12 +30,13 @@ class Gauntlet:
         g = Gauntlet()
         result = g.detect("ignore previous instructions")
 
-        # All layers (BYOK)
+        # Cloud mode - all layers (BYOK)
         g = Gauntlet(openai_key="sk-...", anthropic_key="sk-ant-...")
         result = g.detect("subtle attack")
 
-        # Auto-resolve keys from config/env
-        g = Gauntlet()  # reads ~/.gauntlet/config.toml or env vars
+        # SLM mode - all layers, no API keys, fully offline
+        g = Gauntlet(mode="slm")
+        result = g.detect("subtle attack")
     """
 
     def __init__(
@@ -49,29 +50,42 @@ class Gauntlet:
         confidence_threshold: float = 0.70,
         redis_url: str | None = None,
         cache_ttl: int = 3600,
+        *,
+        mode: str | None = None,
+        slm_model_path: str | None = None,
     ) -> None:
         """Initialize the Gauntlet detector.
 
-        Key resolution order:
-        1. Constructor args
-        2. Config file (~/.gauntlet/config.toml)
-        3. Environment variables (OPENAI_API_KEY, ANTHROPIC_API_KEY)
-        4. Layer 1 only (no keys needed)
-
         Args:
-            openai_key: OpenAI API key for Layer 2.
-            anthropic_key: Anthropic API key for Layer 3.
+            openai_key: OpenAI API key for Layer 2 (cloud mode).
+            anthropic_key: Anthropic API key for Layer 3 (cloud mode).
             embedding_threshold: Similarity threshold for Layer 2.
-            embedding_model: OpenAI embedding model name.
-            llm_model: Claude model name for Layer 3.
-            llm_timeout: Timeout for Layer 3 API calls.
+            embedding_model: OpenAI embedding model name (cloud mode).
+            llm_model: Claude model name for Layer 3 (cloud mode).
+            llm_timeout: Timeout for Layer 3 API calls (cloud mode).
             confidence_threshold: Min confidence for Layer 3 detection.
             redis_url: Redis connection URL for caching (optional, opt-in).
             cache_ttl: Cache entry TTL in seconds (default: 3600).
+            mode: "cloud" (default) or "slm" for local models. Resolved from
+                  config/env (GAUNTLET_MODE) if not specified.
+            slm_model_path: Path to SLM checkpoint directory (slm mode).
+                            Defaults to training/checkpoints/deberta-v3-small-injection/best/
         """
-        # Resolve keys
-        self._openai_key = openai_key or get_openai_key()
-        self._anthropic_key = anthropic_key or get_anthropic_key()
+        # Resolve mode: constructor > config > env > default "cloud"
+        self._mode = mode or get_mode() or "cloud"
+        if self._mode not in ("cloud", "slm"):
+            raise ValueError(f"Invalid mode: {self._mode}. Must be 'cloud' or 'slm'.")
+
+        # Resolve keys only in cloud mode
+        if self._mode == "cloud":
+            self._openai_key = openai_key or get_openai_key()
+            self._anthropic_key = anthropic_key or get_anthropic_key()
+        else:
+            # SLM mode: skip key resolution entirely
+            self._openai_key = None
+            self._anthropic_key = None
+
+        self._slm_model_path = slm_model_path or get_slm_model_path()
 
         # Cache (opt-in)
         self._cache = None
@@ -91,15 +105,30 @@ class Gauntlet:
         self._embedding_threshold = embedding_threshold
         self._embedding_model = embedding_model
 
-        # Layer 3: LLM Judge (lazy init)
+        # Layer 3: LLM/SLM Judge (lazy init)
         self._llm = None
         self._llm_model = llm_model
         self._llm_timeout = llm_timeout
         self._confidence_threshold = confidence_threshold
 
     def _get_embeddings_detector(self):
-        """Lazy-initialize Layer 2 detector."""
-        if self._embeddings is None and self._openai_key:
+        """Lazy-initialize Layer 2 detector based on mode."""
+        if self._embeddings is not None:
+            return self._embeddings
+
+        if self._mode == "slm":
+            try:
+                from gauntlet.layers.embeddings import EmbeddingsDetector
+
+                self._embeddings = EmbeddingsDetector(
+                    threshold=self._embedding_threshold,
+                    mode="slm",
+                )
+            except ImportError:
+                logger.debug("Layer 2 SLM deps not installed (sentence-transformers, numpy)")
+            except Exception as e:
+                logger.warning("Failed to initialize Layer 2 (SLM): %s", type(e).__name__)
+        elif self._openai_key:
             try:
                 from gauntlet.layers.embeddings import EmbeddingsDetector
 
@@ -112,11 +141,27 @@ class Gauntlet:
                 logger.debug("Layer 2 deps not installed (openai, numpy)")
             except Exception as e:
                 logger.warning("Failed to initialize Layer 2: %s", type(e).__name__)
+
         return self._embeddings
 
     def _get_llm_detector(self):
-        """Lazy-initialize Layer 3 detector."""
-        if self._llm is None and self._anthropic_key:
+        """Lazy-initialize Layer 3 detector based on mode."""
+        if self._llm is not None:
+            return self._llm
+
+        if self._mode == "slm":
+            try:
+                from gauntlet.layers.slm_judge import SLMDetector
+
+                kwargs = {"confidence_threshold": self._confidence_threshold}
+                if self._slm_model_path:
+                    kwargs["model_path"] = self._slm_model_path
+                self._llm = SLMDetector(**kwargs)
+            except ImportError:
+                logger.debug("Layer 3 SLM deps not installed (torch, transformers)")
+            except Exception as e:
+                logger.warning("Failed to initialize Layer 3 (SLM): %s", type(e).__name__)
+        elif self._anthropic_key:
             try:
                 from gauntlet.layers.llm_judge import LLMDetector
 
@@ -130,27 +175,46 @@ class Gauntlet:
                 logger.debug("Layer 3 deps not installed (anthropic)")
             except Exception as e:
                 logger.warning("Failed to initialize Layer 3: %s", type(e).__name__)
+
         return self._llm
 
     @property
     def available_layers(self) -> list[int]:
         """Return list of available layer numbers."""
         layers = [1]
-        if self._openai_key:
+
+        if self._mode == "slm":
             try:
                 import numpy  # noqa: F401
-                import openai  # noqa: F401
+                import sentence_transformers  # noqa: F401
 
                 layers.append(2)
             except ImportError:
                 pass
-        if self._anthropic_key:
             try:
-                import anthropic  # noqa: F401
+                import torch  # noqa: F401
+                import transformers  # noqa: F401
 
                 layers.append(3)
             except ImportError:
                 pass
+        else:
+            if self._openai_key:
+                try:
+                    import numpy  # noqa: F401
+                    import openai  # noqa: F401
+
+                    layers.append(2)
+                except ImportError:
+                    pass
+            if self._anthropic_key:
+                try:
+                    import anthropic  # noqa: F401
+
+                    layers.append(3)
+                except ImportError:
+                    pass
+
         return layers
 
     def detect(

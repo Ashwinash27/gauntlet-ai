@@ -23,7 +23,7 @@ def _get_detector():
     if _detector is None:
         from gauntlet.detector import Gauntlet
 
-        _detector = Gauntlet()
+        _detector = Gauntlet()  # Reads GAUNTLET_MODE env var automatically
     return _detector
 
 
@@ -66,6 +66,7 @@ class DetectResponse(BaseModel):
 class HealthResponse(BaseModel):
     status: str
     version: str
+    mode: str
     available_layers: list[int]
 
 
@@ -83,7 +84,7 @@ def create_app():
     app = FastAPI(
         title="Gauntlet",
         description="Prompt injection detection API",
-        version="0.2.0",
+        version="0.3.0",
         lifespan=_lifespan,
     )
 
@@ -99,7 +100,8 @@ def create_app():
         detector = _get_detector()
         return HealthResponse(
             status="healthy",
-            version="0.2.0",
+            version="0.3.0",
+            mode=detector._mode,
             available_layers=detector.available_layers,
         )
 
