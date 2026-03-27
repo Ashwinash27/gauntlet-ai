@@ -660,6 +660,6 @@ class TestSLMMode:
         )
         g._llm = mock_l3
 
-        result = g.detect("subtle attack that bypasses regex and embeddings")
+        result = g.detect("subtle attack that bypasses regex and embeddings", layers=[1, 2, 3])
         assert result.is_injection is True
         assert result.detected_by_layer == 3

@@ -521,6 +521,24 @@ def _make_bge_files(tmp_path: Path, n_vectors: int = 5, dim: int = 384) -> tuple
     return npy_path, meta_path
 
 
+_has_sentence_transformers = (
+    pytest.importorskip(
+        "sentence_transformers",
+        reason="sentence_transformers not installed",
+    )
+    if False
+    else None
+)
+
+try:
+    import sentence_transformers as _st  # noqa: F401
+
+    _skip_no_st = False
+except ImportError:
+    _skip_no_st = True
+
+
+@pytest.mark.skipif(_skip_no_st, reason="sentence_transformers not installed")
 class TestBGEMode:
     """Tests for SLM/BGE embedding mode."""
 
