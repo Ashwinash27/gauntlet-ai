@@ -8,7 +8,7 @@ import logging
 import time
 
 from gauntlet.config import get_anthropic_key, get_mode, get_openai_key, get_slm_model_path
-from gauntlet.layers.rules import RulesDetector
+from gauntlet.layers.rules import RulesDetector, sanitize_adversarial
 from gauntlet._logging import _log_detection_event
 from gauntlet.models import DetectionResult, LayerResult
 
@@ -241,6 +241,11 @@ class Gauntlet:
                 layer_results=[],
                 total_latency_ms=0.0,
             )
+
+        # Sanitize adversarial characters before any layer sees the text.
+        # Strips zero-width chars, Unicode Tags (ASCII smuggling), variation
+        # selectors, bidirectional overrides, and normalizes whitespace.
+        text = sanitize_adversarial(text)
 
         start_time = time.perf_counter()
         layer_results: list[LayerResult] = []

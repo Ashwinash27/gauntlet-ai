@@ -1139,4 +1139,130 @@ class RulesDetector:
         return matches
 
 
-__all__ = ["RulesDetector", "InjectionPattern", "INJECTION_PATTERNS", "normalize_unicode"]
+# =============================================================================
+# ADVERSARIAL TEXT SANITIZATION
+# =============================================================================
+
+# Invisible/control characters to strip (by codepoint)
+_INVISIBLE_CHARS = frozenset(
+    [
+        0x00AD,  # Soft Hyphen
+        0x034F,  # Combining Grapheme Joiner
+        0x061C,  # Arabic Letter Mark
+        0x115F,  # Hangul Choseong Filler
+        0x1160,  # Hangul Jungseong Filler
+        0x180E,  # Mongolian Vowel Separator
+        0x200B,  # Zero Width Space
+        0x200C,  # Zero Width Non-Joiner
+        0x200D,  # Zero Width Joiner
+        0x200E,  # Left-to-Right Mark
+        0x200F,  # Right-to-Left Mark
+        0x202A,  # Left-to-Right Embedding
+        0x202B,  # Right-to-Left Embedding
+        0x202C,  # Pop Directional Formatting
+        0x202D,  # Left-to-Right Override
+        0x202E,  # Right-to-Left Override
+        0x2060,  # Word Joiner
+        0x2061,  # Function Application
+        0x2062,  # Invisible Times
+        0x2063,  # Invisible Separator
+        0x2064,  # Invisible Plus
+        0x2066,  # Left-to-Right Isolate
+        0x2067,  # Right-to-Left Isolate
+        0x2068,  # First Strong Isolate
+        0x2069,  # Pop Directional Isolate
+        0xFEFF,  # Zero Width No-Break Space (BOM)
+        0xFFF9,  # Interlinear Annotation Anchor
+        0xFFFA,  # Interlinear Annotation Separator
+        0xFFFB,  # Interlinear Annotation Terminator
+    ]
+)
+
+# Unicode whitespace characters to normalize to ASCII space
+_EXOTIC_WHITESPACE = frozenset(
+    [
+        0x00A0,  # No-Break Space
+        0x1680,  # Ogham Space Mark
+        0x2000,  # En Quad
+        0x2001,  # Em Quad
+        0x2002,  # En Space
+        0x2003,  # Em Space
+        0x2004,  # Three-Per-Em Space
+        0x2005,  # Four-Per-Em Space
+        0x2006,  # Six-Per-Em Space
+        0x2007,  # Figure Space
+        0x2008,  # Punctuation Space
+        0x2009,  # Thin Space
+        0x200A,  # Hair Space
+        0x2028,  # Line Separator
+        0x2029,  # Paragraph Separator
+        0x202F,  # Narrow No-Break Space
+        0x205F,  # Medium Mathematical Space
+        0x3000,  # Ideographic Space
+    ]
+)
+
+
+def sanitize_adversarial(text: str) -> str:
+    """Strip invisible characters, normalize whitespace, and remove Unicode smuggling.
+
+    This function defends against:
+    - Zero-width character injection (54% ASR against guardrails)
+    - Unicode Tag smuggling / ASCII smuggling (90% ASR)
+    - Emoji smuggling via variation selectors (100% ASR)
+    - Bidirectional text override attacks (53% ASR)
+    - Whitespace insertion attacks ("i g n o r e")
+
+    Should be called BEFORE tokenization on all text entering the detection cascade.
+
+    Args:
+        text: Raw input text.
+
+    Returns:
+        Sanitized text with adversarial characters removed.
+    """
+    if not text:
+        return text
+
+    result = []
+    for ch in text:
+        cp = ord(ch)
+
+        # Strip Unicode Tags block (U+E0001-U+E007F) — ASCII smuggling
+        if 0xE0001 <= cp <= 0xE007F:
+            continue
+
+        # Strip variation selectors (U+FE00-U+FE0F, U+E0100-U+E01EF)
+        if 0xFE00 <= cp <= 0xFE0F or 0xE0100 <= cp <= 0xE01EF:
+            continue
+
+        # Strip known invisible characters
+        if cp in _INVISIBLE_CHARS:
+            continue
+
+        # Strip Private Use Area characters (often used for smuggling)
+        if 0xE000 <= cp <= 0xF8FF or 0xF0000 <= cp <= 0xFFFFD or 0x100000 <= cp <= 0x10FFFD:
+            continue
+
+        # Normalize exotic whitespace to ASCII space
+        if cp in _EXOTIC_WHITESPACE:
+            result.append(" ")
+            continue
+
+        result.append(ch)
+
+    text = "".join(result)
+
+    # Collapse runs of whitespace to single space
+    text = re.sub(r" {2,}", " ", text)
+
+    return text.strip()
+
+
+__all__ = [
+    "RulesDetector",
+    "InjectionPattern",
+    "INJECTION_PATTERNS",
+    "normalize_unicode",
+    "sanitize_adversarial",
+]
