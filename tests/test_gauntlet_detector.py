@@ -563,5 +563,3 @@ class TestErrorsAndSkipped:
         assert "layers_skipped" in d
         assert isinstance(d["errors"], list)
         assert isinstance(d["layers_skipped"], list)
-
-
