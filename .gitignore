@@ -60,14 +60,23 @@ data/raw/
 
 # Training artifacts (large)
 training/checkpoints/
+training/splits/
+training/splits_v2/
 training/splits_v3/
 training/splits_nli/
+training/raw/
+training/hard_negatives/
+training/*.csv
+training/*.npz
 wandb/
 
 # Model files
 *.bin
 *.safetensors
 *.onnx
+
+# Stale docs
+slm_gauntlet_upgrade_spec.docx
 
 # Evaluation artifacts (regenerate with python -m evaluation.benchmark)
 evaluation/results.json

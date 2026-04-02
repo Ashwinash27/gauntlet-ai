@@ -1,0 +1,266 @@
+{
+  "NotInject": {
+    "Gauntlet Ensemble": {
+      "f1": 0,
+      "prec": 0,
+      "rec": 0,
+      "fpr": 0.0413,
+      "tp": 0,
+      "fp": 14
+    },
+    "Gauntlet L1+L2+Binary": {
+      "f1": 0,
+      "prec": 0,
+      "rec": 0,
+      "fpr": 0.2094,
+      "tp": 0,
+      "fp": 71
+    },
+    "Gauntlet L1+L2+NLI": {
+      "f1": 0,
+      "prec": 0,
+      "rec": 0,
+      "fpr": 0.2655,
+      "tp": 0,
+      "fp": 90
+    },
+    "Gauntlet L1 only": {
+      "f1": 0,
+      "prec": 0,
+      "rec": 0,
+      "fpr": 0.0029,
+      "tp": 0,
+      "fp": 1
+    },
+    "Gauntlet L1+L2": {
+      "f1": 0,
+      "prec": 0,
+      "rec": 0,
+      "fpr": 0.0059,
+      "tp": 0,
+      "fp": 2
+    },
+    "Meta PG2": {
+      "f1": 0,
+      "prec": 0,
+      "rec": 0,
+      "fpr": 0.0649,
+      "tp": 0,
+      "fp": 22
+    },
+    "ProtectAI v2": {
+      "f1": 0,
+      "prec": 0,
+      "rec": 0,
+      "fpr": 0.4248,
+      "tp": 0,
+      "fp": 144
+    },
+    "deepset": {
+      "f1": 0,
+      "prec": 0,
+      "rec": 0,
+      "fpr": 0.705,
+      "tp": 0,
+      "fp": 239
+    }
+  },
+  "ProtectAI-Val": {
+    "Gauntlet Ensemble": {
+      "f1": 0.7006,
+      "prec": 0.8885,
+      "rec": 0.5783,
+      "fpr": 0.055,
+      "tp": 805,
+      "fp": 101
+    },
+    "Gauntlet L1+L2+Binary": {
+      "f1": 0.7337,
+      "prec": 0.837,
+      "rec": 0.653,
+      "fpr": 0.0965,
+      "tp": 909,
+      "fp": 177
+    },
+    "Gauntlet L1+L2+NLI": {
+      "f1": 0.8037,
+      "prec": 0.8379,
+      "rec": 0.7723,
+      "fpr": 0.1134,
+      "tp": 1075,
+      "fp": 208
+    },
+    "Gauntlet L1 only": {
+      "f1": 0.6186,
+      "prec": 0.8895,
+      "rec": 0.4741,
+      "fpr": 0.0447,
+      "tp": 660,
+      "fp": 82
+    },
+    "Gauntlet L1+L2": {
+      "f1": 0.6685,
+      "prec": 0.8982,
+      "rec": 0.5323,
+      "fpr": 0.0458,
+      "tp": 741,
+      "fp": 84
+    },
+    "Meta PG2": {
+      "f1": 0.4256,
+      "prec": 0.7097,
+      "rec": 0.3039,
+      "fpr": 0.0943,
+      "tp": 423,
+      "fp": 173
+    },
+    "ProtectAI v2": {
+      "f1": 0.4523,
+      "prec": 0.5554,
+      "rec": 0.3815,
+      "fpr": 0.2316,
+      "tp": 531,
+      "fp": 425
+    },
+    "deepset": {
+      "f1": 0.7657,
+      "prec": 0.6287,
+      "rec": 0.9792,
+      "fpr": 0.4387,
+      "tp": 1363,
+      "fp": 805
+    }
+  },
+  "deepset": {
+    "Gauntlet Ensemble": {
+      "f1": 0.7234,
+      "prec": 1.0,
+      "rec": 0.5667,
+      "fpr": 0.0,
+      "tp": 34,
+      "fp": 0
+    },
+    "Gauntlet L1+L2+Binary": {
+      "f1": 0.8,
+      "prec": 1.0,
+      "rec": 0.6667,
+      "fpr": 0.0,
+      "tp": 40,
+      "fp": 0
+    },
+    "Gauntlet L1+L2+NLI": {
+      "f1": 0.8235,
+      "prec": 1.0,
+      "rec": 0.7,
+      "fpr": 0.0,
+      "tp": 42,
+      "fp": 0
+    },
+    "Gauntlet L1 only": {
+      "f1": 0.2857,
+      "prec": 1.0,
+      "rec": 0.1667,
+      "fpr": 0.0,
+      "tp": 10,
+      "fp": 0
+    },
+    "Gauntlet L1+L2": {
+      "f1": 0.4,
+      "prec": 1.0,
+      "rec": 0.25,
+      "fpr": 0.0,
+      "tp": 15,
+      "fp": 0
+    },
+    "Meta PG2": {
+      "f1": 0.2857,
+      "prec": 1.0,
+      "rec": 0.1667,
+      "fpr": 0.0,
+      "tp": 10,
+      "fp": 0
+    },
+    "ProtectAI v2": {
+      "f1": 0.5366,
+      "prec": 1.0,
+      "rec": 0.3667,
+      "fpr": 0.0,
+      "tp": 22,
+      "fp": 0
+    },
+    "deepset": {
+      "f1": 0.9916,
+      "prec": 1.0,
+      "rec": 0.9833,
+      "fpr": 0.0,
+      "tp": 59,
+      "fp": 0
+    }
+  },
+  "JailbreakBench": {
+    "Gauntlet Ensemble": {
+      "f1": 0.5109,
+      "prec": 0.9459,
+      "rec": 0.35,
+      "fpr": 0.02,
+      "tp": 35,
+      "fp": 2
+    },
+    "Gauntlet L1+L2+Binary": {
+      "f1": 0.8362,
+      "prec": 0.961,
+      "rec": 0.74,
+      "fpr": 0.03,
+      "tp": 74,
+      "fp": 3
+    },
+    "Gauntlet L1+L2+NLI": {
+      "f1": 0.8511,
+      "prec": 0.9091,
+      "rec": 0.8,
+      "fpr": 0.08,
+      "tp": 80,
+      "fp": 8
+    },
+    "Gauntlet L1 only": {
+      "f1": 0.0,
+      "prec": 0.0,
+      "rec": 0.0,
+      "fpr": 0.0,
+      "tp": 0,
+      "fp": 0
+    },
+    "Gauntlet L1+L2": {
+      "f1": 0.1121,
+      "prec": 0.8571,
+      "rec": 0.06,
+      "fpr": 0.01,
+      "tp": 6,
+      "fp": 1
+    },
+    "Meta PG2": {
+      "f1": 0.4189,
+      "prec": 0.6458,
+      "rec": 0.31,
+      "fpr": 0.17,
+      "tp": 31,
+      "fp": 17
+    },
+    "ProtectAI v2": {
+      "f1": 0.0,
+      "prec": 0.0,
+      "rec": 0.0,
+      "fpr": 0.01,
+      "tp": 0,
+      "fp": 1
+    },
+    "deepset": {
+      "f1": 0.7013,
+      "prec": 0.6183,
+      "rec": 0.81,
+      "fpr": 0.5,
+      "tp": 81,
+      "fp": 50
+    }
+  }
+}

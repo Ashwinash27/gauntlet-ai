@@ -241,3 +241,105 @@ Build an open-source, fully local prompt injection detector that runs on consume
 | 2026-03-26 | NLI model trained (F1=98.19%), ensemble benchmarked |
 | 2026-03-27 | Threshold optimization (0.92/0.85), beats Meta PG2 on PAI FPR |
 | 2026-03-28 | Adversarial preprocessing (sanitize_adversarial), 444 tests |
+| 2026-03-30 | 4-benchmark evaluation (NotInject, PAI-Val, deepset, JailbreakBench) |
+| 2026-03-30 | Bootstrap 95% CIs + McNemar's test |
+| 2026-03-30 | Multi-seed training: Binary seeds 42, 123, 456 |
+| 2026-03-31 | Multi-seed training: NLI seeds 42, 123, 456. All 6 runs complete. |
+
+---
+
+## 13. Multi-Seed Validation Results
+
+### Binary v3 (Focal Loss + Hard Negatives + MOF)
+
+| Seed | F1 | Precision | Recall | FPR |
+|------|-----|-----------|--------|-----|
+| 42 | 98.26% | 98.54% | 97.98% | 0.55% |
+| 123 | 98.40% | 98.72% | 98.08% | 0.66% |
+| 456 | 98.18% | 98.67% | 97.70% | 0.68% |
+| **Mean ± Std** | **98.28% ± 0.11%** | **98.64% ± 0.09%** | **97.92% ± 0.19%** | **0.63% ± 0.07%** |
+
+### NLI (Fine-tuned from MoritzLaurer NLI checkpoint)
+
+| Seed | F1 | Precision | Recall | Accuracy |
+|------|-----|-----------|--------|----------|
+| 42 | 98.19% | 97.79% | 98.60% | 98.19% |
+| 123 | 98.15% | 98.12% | 98.19% | 98.15% |
+| 456 | 98.26% | 98.13% | 98.39% | 98.26% |
+| **Mean ± Std** | **98.20% ± 0.06%** | **98.01% ± 0.19%** | **98.39% ± 0.21%** | **98.20% ± 0.06%** |
+
+---
+
+## 14. Full 4-Benchmark Results (8 Systems)
+
+### NotInject (339 benign — FPR only)
+
+| System | FPR |
+|--------|-----|
+| Gauntlet L1 only | 0.3% |
+| Gauntlet L1+L2 | 0.6% |
+| **Gauntlet Ensemble** | **4.1%** |
+| Meta PG2 | 6.5% |
+| Gauntlet L1+L2+Binary | 20.9% |
+| Gauntlet L1+L2+NLI | 26.6% |
+| ProtectAI v2 | 42.5% |
+| deepset | 70.5% |
+
+### ProtectAI-Validation (3,227 mixed)
+
+| System | F1 | Recall | FPR |
+|--------|-----|--------|-----|
+| Gauntlet L1+L2+NLI | 0.804 | 77.2% | 11.3% |
+| deepset | 0.766 | 97.9% | 43.9% |
+| Gauntlet L1+L2+Binary | 0.734 | 65.3% | 9.7% |
+| **Gauntlet Ensemble** | **0.701** | **57.8%** | **5.5%** |
+| Gauntlet L1+L2 | 0.668 | 53.2% | 4.6% |
+| ProtectAI v2 | 0.452 | 38.1% | 23.2% |
+| Meta PG2 | 0.426 | 30.4% | 9.4% |
+| Gauntlet L1 only | 0.619 | 47.4% | 4.5% |
+
+### deepset Test (116 samples)
+
+| System | F1 | FPR |
+|--------|-----|-----|
+| deepset | 0.992 | 0.0% |
+| Gauntlet L1+L2+NLI | 0.824 | 0.0% |
+| Gauntlet L1+L2+Binary | 0.800 | 0.0% |
+| Gauntlet Ensemble | 0.723 | 0.0% |
+| ProtectAI v2 | 0.537 | 0.0% |
+| Meta PG2 | 0.286 | 0.0% |
+
+### JailbreakBench (200 samples)
+
+| System | F1 | Recall | FPR |
+|--------|-----|--------|-----|
+| Gauntlet L1+L2+NLI | 0.851 | 80.0% | 8.0% |
+| Gauntlet L1+L2+Binary | 0.836 | 74.0% | 3.0% |
+| deepset | 0.701 | 81.0% | 50.0% |
+| Gauntlet Ensemble | 0.511 | 35.0% | 2.0% |
+| Meta PG2 | 0.419 | 31.0% | 17.0% |
+| ProtectAI v2 | 0.000 | 0.0% | 1.0% |
+
+---
+
+## 15. Bootstrap 95% Confidence Intervals
+
+### NotInject FPR
+
+| System | FPR | 95% CI |
+|--------|-----|--------|
+| Gauntlet Ensemble | 4.1% | [2.1%, 6.5%] |
+| Meta PG2 | 6.5% | [4.1%, 9.1%] |
+| NLI cascade | 26.5% | [21.8%, 31.3%] |
+
+**McNemar's test (Ensemble vs PG2):** p=0.216 — NOT significant (sample too small)
+
+### ProtectAI-Validation
+
+| Metric | Gauntlet Ensemble (95% CI) | Meta PG2 (95% CI) |
+|--------|---------------------------|-------------------|
+| FPR | 0.055 [0.045, 0.066] | 0.094 [0.081, 0.108] |
+| Recall | 0.578 [0.553, 0.604] | 0.304 [0.280, 0.329] |
+| F1 | 0.701 [0.679, 0.721] | 0.425 [0.398, 0.453] |
+
+**McNemar's test (Ensemble vs PG2):** p<0.0001 — HIGHLY significant

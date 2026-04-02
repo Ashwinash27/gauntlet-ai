@@ -167,6 +167,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--fp16", action="store_true", default=True)
     parser.add_argument("--no_fp16", action="store_true")
     parser.add_argument("--patience", type=int, default=2)
+    parser.add_argument("--seed", type=int, default=42)
     return parser.parse_args()
 
 
@@ -189,6 +190,7 @@ def main():
     else:
         print("WARNING: No GPU detected")
 
+    SEED = args.seed
     torch.manual_seed(SEED)
     np.random.seed(SEED)
 
