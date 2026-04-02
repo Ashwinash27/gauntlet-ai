@@ -175,8 +175,6 @@ To measure generalization beyond the training set, we evaluate on three separate
 
 - **Internal (known)**: 150 core attack phrases that are present in the embeddings database + 1,000 benign samples. This measures in-distribution detection.
 - **Internal (holdout)**: 100 malicious samples from our generated dataset whose text does NOT appear in the embeddings database + 1,000 benign. This measures near-distribution generalization.
-- **PINT Benchmark**: 546 samples (203 injection + 343 benign) from an external prompt injection dataset. This measures out-of-distribution generalization.
-
 | Benchmark | Samples | Config | Precision | Recall | F1 | FPR | Avg Latency |
 |-----------|---------|--------|-----------|--------|----|-----|-------------|
 | Internal (known) | 150m + 1000b | L1 | 93.85% | 40.67% | 56.74% | 0.40% | 0.2ms |
@@ -185,29 +183,10 @@ To measure generalization beyond the training set, we evaluate on three separate
 | Internal (holdout) | 100m + 1000b | L1 | 90.70% | 39.00% | 54.55% | 0.40% | 0.2ms |
 | Internal (holdout) | 100m + 1000b | L1+2 | 94.23% | 98.00% | 96.08% | 0.60% | 202ms |
 | Internal (holdout) | 100m + 1000b | L1+2+3 | 56.90% | 99.00% | 72.26% | 7.50% | 1105ms |
-| PINT external | 203m + 343b | L1 | 98.02% | 48.77% | 65.13% | 0.58% | 0.2ms |
-| PINT external | 203m + 343b | L1+2 | 98.30% | 85.22% | 91.29% | 0.87% | 200ms |
-| PINT external | 203m + 343b | L1+2+3 | 96.94% | 93.60% | 95.24% | 1.75% | 793ms |
-
-#### After Embedding Expansion + Regex Expansion (evaluated on held-out PINT test)
-
-We split the PINT injection samples 50/50: the first 101 injections were added to the embeddings database (603 total attack phrases, up from 502), and the remaining 102 injections + 343 benign samples form the held-out test set. We also added 11 new regex rules targeting patterns found in PINT false negatives (forget-everything, role-assignment, German/Spanish/French injection phrases, context-delimiter markers).
-
-| Benchmark | Samples | Config | Precision | Recall | F1 | FPR | Avg Latency |
-|-----------|---------|--------|-----------|--------|----|-----|-------------|
-| PINT test (held-out) | 102m + 343b | L1 | 97.01% | 63.73% | 76.92% | 0.58% | 0.2ms |
-| PINT test (held-out) | 102m + 343b | L1+2 | 96.00% | 70.59% | 81.36% | 0.87% | 233ms |
-| PINT test (held-out) | 102m + 343b | L1+2+3 | 94.68% | 87.25% | 90.82% | 1.46% | 1.2s |
-
-**Impact of regex expansion on PINT (L1):** Recall jumped from 11.8% → **63.7%** (+51.9pp) while precision improved to 97%. The 11 new rules alone catch 42 of the 90 L1 false negatives without introducing false positives on the PINT benign set.
-
-**Full cascade (L1+2+3):** 87.25% recall with 94.68% precision, yielding an F1 of **90.82%**. Layer 3 catches 17 additional injections that escape both regex and embeddings, with only a 0.6% FPR increase over L1+2.
 
 ### Layer Value Analysis
 
 Each layer adds detection capability at different cost/latency tradeoffs:
-
-**On familiar attacks** (Internal known + holdout):
 
 | Config | Recall | FPR | Avg Latency | What it adds |
 |--------|--------|-----|-------------|--------------|
@@ -215,15 +194,7 @@ Each layer adds detection capability at different cost/latency tradeoffs:
 | L1+2 | 98-100% | 0.6% | 250ms | Embeddings catch semantically similar attacks — near-perfect recall with minimal FPR increase |
 | L1+2+3 | 99-100% | 8% | 1.3s | LLM judge adds marginal recall but significantly increases false positives on familiar attacks |
 
-**On unfamiliar attacks** (PINT held-out test, after embedding + regex expansion):
-
-| Config | Recall | FPR | Avg Latency | What it adds |
-|--------|--------|-----|-------------|--------------|
-| L1 | 63.7% | 0.6% | 0.2ms | Expanded regex rules catch the majority of attacks instantly — free, sub-millisecond |
-| L1+2 | 70.6% | 0.9% | 233ms | Embeddings catch 7 more attacks that don't match regex patterns |
-| L1+2+3 | 87.3% | 1.5% | 1.2s | LLM judge catches 17 more attacks, pushing recall to 87% with F1 above 90% |
-
-**Key takeaway:** Layer 1 (regex) now provides strong baseline protection even on unfamiliar attacks — 63.7% recall at near-zero cost after targeted rule expansion. The full L1+2+3 cascade achieves **90.8% F1** on held-out external data with only 1.5% FPR. The optimal configuration depends on your latency budget: L1 alone gives fast, free protection; add L2 for modest improvement; add L3 when you need to catch the hardest attacks.
+**Key takeaway:** The optimal configuration depends on your latency budget: L1 alone gives fast, free protection; add L2 for near-perfect recall on known attacks; add L3 when you need to catch the hardest attacks.
 
 ```bash
 python -m evaluation.cross_benchmark

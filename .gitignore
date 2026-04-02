@@ -78,6 +78,9 @@ wandb/
 # Stale docs
 slm_gauntlet_upgrade_spec.docx
 
+# Removed submodule
+training/pint-benchmark/
+
 # Evaluation artifacts (regenerate with python -m evaluation.benchmark)
 evaluation/results.json
 evaluation/cross_benchmark_results.json
